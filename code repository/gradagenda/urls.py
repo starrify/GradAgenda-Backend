@@ -1,10 +1,12 @@
 from django.conf.urls import patterns, include, url
-
+from gradagenda import settings, views
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^$', views.index),
+    url(r'^site_media/(?P<path>.*)$','django.views.static.serve',{'document_root':settings.STATIC_ROOT}),
     # Examples:
     # url(r'^$', 'gradagenda.views.home', name='home'),
     # url(r'^gradagenda/', include('gradagenda.foo.urls')),
