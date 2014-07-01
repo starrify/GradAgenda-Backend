@@ -1,18 +1,22 @@
-#from rest_framework import serializers
-#from django.forms import widgets
-#from backend.register.models import user
-#class RegisterSerializer(serializers.ModelSerializer):
-#    class Meta:
-#        model = user
-#        fields = ('user_name',
-#                  'user_id',
-#                  'user_password',
-#                  'user_accounttype',
-#                  'user_accountnum',
-#                  'user_email',
-#                  'user_university',
-#                  'user_college',
-#                  'user_major',
-#                  'user_grade',
-#                  'user_gender'
-#                )
+from rest_framework import serializers
+from django.forms import widgets
+from backend.personal.models import User
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name',
+                  'last_name',
+                  'nick_name',
+                  'password',
+                  'gender',
+                  'image',
+                  'eas_id',
+                  'tpa_type',
+                  'tpa_id',
+                  'university',
+                  'college',
+                  'major',
+                  'grade',
+                  'email',
+                  'phone',
+                )

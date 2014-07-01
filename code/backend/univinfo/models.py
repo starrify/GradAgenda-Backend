@@ -1,5 +1,4 @@
 from django.db import models
-#from backend.personal.models import User
 
 class University(models.Model):
 	name = models.CharField(max_length=50)
@@ -35,7 +34,7 @@ class Professor(models.Model):
 	title = models.CharField(max_length=20)
 	prefix = models.CharField(max_length=10)
 	gender = models.CharField(max_length=10)
-	image = models.ImageField(upload_to='images', max_length=255, blank=True, null=True)
+	image = models.CharField(max_length=255, blank=True, null=True)
 	university = models.ForeignKey(University)
 	college = models.ManyToManyField(College)
 	email = models.EmailField(blank=True, null=True)

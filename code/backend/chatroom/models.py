@@ -30,9 +30,9 @@ class Timespan(models.Model):
 	survey = models.ForeignKey(Message)
 	startdatetime = models.DateTimeField()
 	enddatetime = models.DateTimeField(blank=True, null=True)
-	raise_user = models.ManyToManyField(User)
-	agree_user = models.ManyToManyField(User, blank=True, null=True)
-	disagree_user = models.ManyToManyField(User, blank=True, null=True)
+	creater = models.ManyToManyField(User, related_name='Creater')
+	agreer = models.ManyToManyField(User, related_name='Agreer', blank=True, null=True)
+	disagreer = models.ManyToManyField(User, related_name='Disagreer', blank=True, null=True)
 
 	def __unicode__(self):
 		return u'Timespan of %s' % (self.survey)
