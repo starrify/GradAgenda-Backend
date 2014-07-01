@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 
 from backend import settings, views
-from backend.register.views import show, register
+from backend.personal.views import show, register
 
 from django.contrib import admin
 admin.autodiscover()

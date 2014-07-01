@@ -36,7 +36,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'backend.register',
+    'backend.personal',
+    'backend.univinfo',
+    'backend.curriculum',
+    'backend.calendarr',
+    'backend.friend',
+    'backend.chatroom',
     'rest_framework',
 )
 
