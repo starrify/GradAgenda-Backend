@@ -13,8 +13,8 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.index),
-    url(r'^site_media/(?P<path>.*)$','django.views.static.serve',{'document_root':settings.STATIC_ROOT}),
-    url(r'^register/$', register),
-    url(r'^register/show/$', show),
+ #   url(r'^site_media/(?P<path>.*)$','django.views.static.serve',{'document_root':settings.STATIC_ROOT}),
+ #   url(r'^register/$', register),
+ #   url(r'^register/show/$', show),
 )
 
