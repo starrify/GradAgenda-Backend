@@ -36,6 +36,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'backend.personal',
+    'backend.univinfo',
+    'backend.curriculum',
+    'backend.calendarr',
+    'backend.friend',
+    'backend.chatroom',
     'rest_framework',
 )
 
@@ -58,8 +64,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'gradagenda.sqlite3.db'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'gradagenda',
+        'USER': 'tester',
+        'PASSWORD': 'yj1991',
+        'HOST': '127.0.0.1',
+        'PORT': 3306,
     }
 }
 
@@ -82,7 +92,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'backend/static').replace('\\','/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'backend/static')
 
 STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
