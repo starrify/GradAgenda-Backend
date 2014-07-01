@@ -13,17 +13,17 @@ from backend.register.serializers import RegisterSerializer
 
 def register(request):
     if request.method == 'POST':
-        try:
-            data = JSONParser().parse(request)
+        # try:
+        data = JSONParser().parse(request)
+        serializer = RegisterSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
             print "mark"
-            serializer = RegisterSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JSONResponse(serializer.data, status=201)
-            else:
-                return JSONResponse(serializer.errors, status=400)
-        except:
-            return render_to_response('index.html',context_instance=RequestContext(request))
+            return JSONResponse(serializer.data, status=201)
+        else:
+            return JSONResponse(serializer.errors, status=400)
+        # except:
+        #     return render_to_response('index.html',context_instance=RequestContext(request))
 
 def show(request):
     users = user.objects.all()
