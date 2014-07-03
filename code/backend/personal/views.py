@@ -17,6 +17,11 @@ from rest_framework.response import Response
 @api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
+        user_name = request.DATA['nick_name']
+        user = User.objects.get(nick_name = user_name)
+        if user:
+            ret = produceRetCode('fail', 'the user_name exist')
+            return Response(ret)
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()
