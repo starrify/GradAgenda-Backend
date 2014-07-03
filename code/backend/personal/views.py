@@ -10,31 +10,57 @@ from backend.personal.models import User
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from backend.personal.serializers import RegisterSerializer
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
+@api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
-        try:
-            data = JSONParser().parse(request)
-            print "mark"
-            serializer = RegisterSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JSONResponse(serializer.data, status=201)
-            else:
-                return JSONResponse(serializer.errors, status=400)
-        except:
-            return render_to_response('index.html',context_instance=RequestContext(request))
+        serializer = RegisterSerializer(data=request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'GET':
+        users = User.objects.all()
+        serializer = RegisterSerializer(users, many=True)
+        return Response(serializer.data)
 
-def show(request):
-    users = user.objects.all()
-    serializer = RegisterSerializer(users, many=True)
-    return JSONResponse(serializer.data)
+@api_view(['POST'])
+def login(request):
+    user_name = request.DATA['nick_name']
+    user = User.objects.get(nick_name = user_name)
 
-class JSONResponse(HttpResponse):
-    """
-    An HttpResponse that renders it's content into JSON.
-    """
-    def __init__(self, data, **kwargs):
-        content = JSONRenderer().render(data)
-        kwargs['content_type'] = 'application/json'
-        super(JSONResponse, self).__init__(content, **kwargs)
+    if request.DATA['password'] == user.password:
+        ret = produceRetCode('success')
+    else:
+        ret = produceRetCode('fail','user_name or password error')
+    return Response(ret)
+
+@api_view(['POST'])
+def edit(request):
+    user_name = request.DATA['nick_name']
+    try:
+        user = User.objects.get(nick_name = user_name)
+    except User.DoesNotExist:
+        ret = produceRetCode("error", "user doesn't exist")
+        return Response(ret)
+    if request.method == "POST":
+        serializer = RegisterSerializer(user, data = request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            ret = produceRetCode('success')
+            return Response(ret)
+        ret = produceRetCode('fail', 'user info error')
+        return Response(ret)
+
+def produceRetCode(status = "error", info = "", data = []):
+    ret = {}
+    ret['status'] = status
+    if info:
+        ret['info']   = info
+    if data:
+        ret['data']   = data
+    return ret
+

@@ -14,8 +14,6 @@ class RegisterSerializer(serializers.ModelSerializer):
                   'tpa_type',
                   'tpa_id',
                   'university',
-                  'college',
-                  'major',
                   'grade',
                   'email',
                   'phone',
