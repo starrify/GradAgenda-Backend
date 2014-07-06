@@ -90,6 +90,19 @@ def edit(request):
         ret = produceRetCode('fail', 'user info error')
         return Response(ret)
 
+@api_view(['POST'])
+def logout(request):
+    token = request.DATA['token']
+    try:
+        user_state = UserState.objects.get(token=token)
+    except UserState.DoesNotExist:
+        ret = produceRetCode('fail', 'the user has not logged in')
+        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+    print user_state.user
+    user_state.delete()
+    ret = produceRetCode('success','logged out successfully')
+    return Response(ret, status=status.HTTP_204_NO_CONTENT)
+
 def produceRetCode(status = "error", info = "", data = []):
     ret = {}
     ret['status'] = status
