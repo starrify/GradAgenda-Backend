@@ -98,7 +98,6 @@ def logout(request):
     except UserState.DoesNotExist:
         ret = produceRetCode('fail', 'the user has not logged in')
         return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    print user_state.user
     user_state.delete()
     ret = produceRetCode('success','logged out successfully')
     return Response(ret, status=status.HTTP_204_NO_CONTENT)
