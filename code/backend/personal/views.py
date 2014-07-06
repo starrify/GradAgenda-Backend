@@ -6,10 +6,8 @@ from django.template import RequestContext
 from django.conf import global_settings
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS
 
-from backend.personal.models import User
-from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
-from backend.personal.serializers import RegisterSerializer
+from backend.personal.models import User, UserState
+from backend.personal.serializers import RegisterSerializer, UserStateSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -17,11 +15,13 @@ from rest_framework.response import Response
 @api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
-        user_name = request.DATA['nick_name']
-        user = User.objects.get(nick_name = user_name)
-        if user:
+        email = request.DATA['email']
+        try:
+            user = User.objects.get(email = email)
             ret = produceRetCode('fail', 'the user_name exist')
-            return Response(ret)
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except User.DoesNotExist:
+            pass
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()
@@ -32,22 +32,52 @@ def register(request):
         serializer = RegisterSerializer(users, many=True)
         return Response(serializer.data)
 
+import time
+import hashlib
 @api_view(['POST'])
 def login(request):
-    user_name = request.DATA['nick_name']
-    user = User.objects.get(nick_name = user_name)
+    email = request.DATA['email']
+    try:
+        user = User.objects.get(email = email)
+    except User.DoesNotExist:
+        ret = produceRetCode('error', 'user does not exist')
+        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if request.META.has_key('HTTP_X_FORWARDED_FOR'):
+        ip =  request.META['HTTP_X_FORWARDED_FOR']
+    else:
+        ip = request.META['REMOTE_ADDR']
+
+    m = hashlib.md5()
+    m.update(email)
+    m.update(time.strftime("%y%m%d%H%M%S",time.localtime()))
+    token = m.hexdigest()
+    stateData = {}
+    stateData['user']  = user.id
+    stateData['token'] = token
+    stateData['ip']    = ip
 
     if request.DATA['password'] == user.password:
         ret = produceRetCode('success')
+        try:
+            state = UserState.objects.get(user = user.id, ip = ip)
+            if state:
+                ret = produceRetCode('error','user already online')
+                return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        except UserState.DoesNotExist:
+            serializer = UserStateSerializer(data=stateData)
+            if serializer.is_valid():
+                serializer.save()
+                ret = produceRetCode('success','return token',stateData)
+                return Response(ret, status=status.HTTP_200_OK)
     else:
         ret = produceRetCode('fail','user_name or password error')
-    return Response(ret)
+        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['POST'])
 def edit(request):
-    user_name = request.DATA['nick_name']
+    email = request.DATA['email']
     try:
-        user = User.objects.get(nick_name = user_name)
+        user = User.objects.get(email = email)
     except User.DoesNotExist:
         ret = produceRetCode("error", "user doesn't exist")
         return Response(ret)

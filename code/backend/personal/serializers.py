@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.forms import widgets
-from backend.personal.models import User
+from backend.personal.models import User,UserState
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -18,3 +18,12 @@ class RegisterSerializer(serializers.ModelSerializer):
                   'email',
                   'phone',
                 )
+
+class UserStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserState
+        fields = (
+              'user',
+              'token',
+              'ip',
+          )
