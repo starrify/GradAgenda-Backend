@@ -17,14 +17,16 @@ strings = {
     'status-success': 'success',
     'status-error': 'error',
     'message-success': 'Fetching completed.',
-    'message-error-unknown': 'Unknown error.',
-    'message-error-communicating':
-        'Error communicating with university servers.',
-    'message-error-unknown-univ': 'Unknown university name.',
-    'message-error-unknown-semester': 'Unknown semester.',
-    'message-error-incorrect-login':
-        'Incorrect ID/password. Authentication failed.',
-    'message-error-authenticating': (
+    'error-unknown': 'Unknown error.',
+    'error-communicating': 'Error communicating with university servers.',
+    'error-unknown-univ': 'Unknown university name.',
+    'error-unknown-semester': 'Unknown semester.',
+    'error-incorrect-login': 'Incorrect ID/password. Authentication failed.',
+    'error-authenticating': (
         'Error authenticating with university servers. '
         'Please contact the developers.')
     }
+
+
+class FetchError(Exception):
+    pass

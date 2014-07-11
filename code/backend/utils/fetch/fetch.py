@@ -40,23 +40,22 @@ def fetch_curriculum(
     """
     try:
         if university not in _univ_collection:
-            return {
-                'status': _common.strings['status-error'],
-                'message': _common.strings['message-error-unknown-univ']
-                }
+            raise _common.FetchError(_common.strings['error-unknown-univ'])
         univ = _univ_collection[university]
         if semester not in univ.strings['semester_curriculum']:
-            return {
-                'status': _common.strings['status-error'],
-                'message': _common.strings['message-error-unknown-semester']
-                }
+            raise _common.FetchError(
+                _common.strings['error-unknown-semester'])
         return univ.fetch_curriculum(
             username, password, semester, per_request_timeout)
-    except:
-        raise
+    except _common.FetchError as err:
         return {
             'status': _common.strings['status-error'],
-            'message': _common.strings['message-error-unknown']
+            'message': '%s' % err
+            }
+    except:
+        return {
+            'status': _common.strings['status-error'],
+            'message': _common.strings['error-unknown']
             }
     raise Exception('This line shall not be reached.')
     pass

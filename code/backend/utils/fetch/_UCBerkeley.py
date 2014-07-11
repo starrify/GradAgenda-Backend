@@ -43,6 +43,8 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
             'message': Message describing the fetch.
             'raw-data': A JSON object of the fetched raw data. May not exist
                 when the fetch fails.
+
+    Raises _common.FetchError on exceptions.
     """
     try:
         # Logging in to CAS
@@ -67,15 +69,9 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
         fail_msg = (
             'The CalNet ID and/or Passphrase you provided are incorrect.')
         if fail_msg in request.text:
-            return {
-                'status': _common.strings['status-error'],
-                'message': _common.strings['message-error-incorrect-login']
-                }
+            raise _common.FetchError(_common.strings['error-incorrect-login'])
         elif succ_msg not in request.text:
-            return {
-                'status': _common.strings['status-error'],
-                'message': _common.strings['message-error-authenticating']
-                }
+            raise _common.FetchError(_common.strings['error-authenticating'])
 
         # Authorizing the calcentral service
         login_url = 'https://auth.berkeley.edu/cas/login'
@@ -102,15 +98,7 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
     except (requests.exceptions.ConnectionError,
             requests.exceptions.HTTPError, requests.exceptions.Timeout,
             requests.exceptions.TooManyRedirects):
-        return {
-            'status': _common.strings['status-error'],
-            'message': _common.strings['message-error-communicating']
-            }
-    except:
-        return {
-            'status': _common.strings['status-error'],
-            'message': _common.strings['message-error-unknown']
-            }
+        raise _common.FetchError(_common.strings['error-communicating'])
 
     raise Exception('This line shall not be reached.')
     pass
