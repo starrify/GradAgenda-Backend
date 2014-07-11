@@ -59,7 +59,7 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
         # Logging in to CAS
         session = requests.Session()
         display_login_url = 'https://wl.mypurdue.purdue.edu/cp/home/displaylogin'
-        request.get('https://wl.mypurdue.purdue.edu/cp/home/displaylogin', timeout=per_request_timeout)
+        request = session.get(display_login_url, timeout=per_request_timeout)
         login_url = 'https://wl.mypurdue.purdue.edu/cp/home/login'
         login_data = {
             'user': username,
