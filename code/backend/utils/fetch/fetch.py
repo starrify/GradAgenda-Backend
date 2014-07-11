@@ -48,6 +48,7 @@ def fetch_curriculum(
         if semester not in univ.strings['semester_curriculum']:
             raise _common.FetchError(
                 _common.strings['error-unknown-semester'])
+        semester = univ.strings['semester_curriculum'][semester]
         return univ.fetch_curriculum(
             username, password, semester, per_request_timeout)
     except _common.FetchError as err:
