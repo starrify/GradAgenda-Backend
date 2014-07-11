@@ -5,7 +5,7 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-import fetch
+import _common
 
 # TODO: complete the license and version info
 __author__ = 'Pengyu CHEN'
@@ -18,9 +18,17 @@ __email__ = 'pengyu@libstarrify.so'
 __status__ = 'development'
 
 
-def fetch_curriculum(
-        username, password, semester,
-        per_request_timeout=fetch.Config.per_request_timeout):
+strings = {
+    'semester_curriculum': {
+        'summer-2014': 'summer-2014',
+        },
+    'semester_univinfo': {
+        'summer-2014': 'SU',
+        }
+    }
+
+
+def fetch_curriculum(username, password, semester, per_request_timeout):
     """Fetches curriculum data using given login info.
 
     Input:
@@ -46,6 +54,7 @@ def fetch_curriculum(
             'username': username,
             'password': password,
             'lt': soup.select('input[name=lt]')[0]['value'],
+            'execution': soup.select('input[name=execution]')[0]['value'],
             '_eventId': soup.select('input[name=_eventId]')[0]['value'],
             }
         request = session.post(
@@ -55,10 +64,17 @@ def fetch_curriculum(
         succ_msg = (
             'You have successfully logged into the CalNet Central'
             ' Authentication Service (CAS).')
-        if succ_msg not in request.text:
+        fail_msg = (
+            'The CalNet ID and/or Passphrase you provided are incorrect.')
+        if fail_msg in request.text:
             return {
-                'status': fetch.Config.strings['status-error'],
-                'message': fetch.Config.strings['message-error-logging-in']
+                'status': _common.strings['status-error'],
+                'message': _common.strings['message-error-incorrect-login']
+                }
+        elif succ_msg not in request.text:
+            return {
+                'status': _common.strings['status-error'],
+                'message': _common.strings['message-error-authenticating']
                 }
 
         # Authorizing the calcentral service
@@ -78,8 +94,8 @@ def fetch_curriculum(
             if sem['slug'] == semester:
                 raw_data = sem
         return {
-            'status': fetch.Config.strings['status-success'],
-            'message': fetch.Config.strings['message-success'],
+            'status': _common.strings['status-success'],
+            'message': _common.strings['message-success'],
             'raw-data': raw_data
             }
 
@@ -87,26 +103,14 @@ def fetch_curriculum(
             requests.exceptions.HTTPError, requests.exceptions.Timeout,
             requests.exceptions.TooManyRedirects):
         return {
-            'status': fetch.Config.strings['status-error'],
-            'message': fetch.Config.strings['message-error-communicating']
+            'status': _common.strings['status-error'],
+            'message': _common.strings['message-error-communicating']
             }
     except:
         return {
-            'status': fetch.Config.strings['status-error'],
-            'message': fetch.Config.strings['message-error-unknown']
+            'status': _common.strings['status-error'],
+            'message': _common.strings['message-error-unknown']
             }
 
     raise Exception('This line shall not be reached.')
     pass
-
-
-# For testing purpose only
-
-def main():
-    ret = fetch_curriculum('a0114792', 'mmk*718AA', 'summer-2014')
-    print(json.dumps(ret, indent=4))
-    pass
-
-
-if __name__ == '__main__':
-    main()

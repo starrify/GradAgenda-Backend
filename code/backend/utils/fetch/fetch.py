@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Common part of curriculum fetcher"""
 
+import _common
+
 # TODO: complete the license and version info
 __author__ = 'Pengyu CHEN'
 __copyright__ = '2014 Deal College Inc.'
@@ -12,16 +14,63 @@ __email__ = 'pengyu@libstarrify.so'
 __status__ = 'development'
 
 
-class Config(object):
-    per_request_timeout = 8
-    strings = {
-        'status-success': 'success',
-        'status-error': 'error',
-        'message-success': 'Fetching completed.',
-        'message-error-communicating':
-            'Error communicating with university servers.',
-        'message-error-unknown': 'Unknown Error.',
-        'message-error-logging-in':
-            'Error logging into university servers.'
-        }
+_univ_collection = {}
+import _UCBerkeley
+_univ_collection['UCBerkeley'] = _UCBerkeley
+
+
+def fetch_curriculum(
+        university, username, password, semester,
+        per_request_timeout=_common.per_request_timeout):
+    """Fetches curriculum data using given login info.
+
+    Input:
+        university: Name of the university, e.g. 'UCBerkeley'.
+        username: Username of 'https://auth.berkeley.edu/cas/login'.
+        password: Password of 'https://auth.berkeley.edu/cas/login'.
+        semester: Name of the semester, e.g. 'summer-2014'.
+        per_request_timeout: Per request timeout in seconds.
+
+    Output:
+        A dictionary with these fields:
+            'status': 'success'/'error'/...
+            'message': Message describing the fetch.
+            'raw-data': A JSON object of the fetched raw data. May not exist
+                when the fetch fails.
+    """
+    try:
+        if university not in _univ_collection:
+            return {
+                'status': _common.strings['status-error'],
+                'message': _common.strings['message-error-unknown-univ']
+                }
+        univ = _univ_collection[university]
+        if semester not in univ.strings['semester_curriculum']:
+            return {
+                'status': _common.strings['status-error'],
+                'message': _common.strings['message-error-unknown-semester']
+                }
+        return univ.fetch_curriculum(
+            username, password, semester, per_request_timeout)
+    except:
+        raise
+        return {
+            'status': _common.strings['status-error'],
+            'message': _common.strings['message-error-unknown']
+            }
+    raise Exception('This line shall not be reached.')
     pass
+
+
+# For testing purpose only
+
+def main():
+    ret = fetch_curriculum(
+        'UCBerkeley', 'a0114792', 'mmk*718AA', 'summer-2014')
+    import json
+    print(json.dumps(ret, indent=4))
+    pass
+
+
+if __name__ == '__main__':
+    main()
