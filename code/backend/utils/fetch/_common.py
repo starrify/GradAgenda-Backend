@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Global configuration for the fetching module."""
+"""Common part for the fetching module."""
 
 # TODO: complete the license and version info
 __author__ = 'Pengyu CHEN'
@@ -29,4 +29,5 @@ strings = {
 
 
 class FetchError(Exception):
+    """Customized exception for the fetching module"""
     pass

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Common part of curriculum fetcher"""
+"""Dispatcher of request of the fetch module."""
 
 import _common
 
@@ -24,19 +24,22 @@ def fetch_curriculum(
         per_request_timeout=_common.per_request_timeout):
     """Fetches curriculum data using given login info.
 
-    Input:
+    Args:
         university: Name of the university, e.g. 'UCBerkeley'.
         username: Username of 'https://auth.berkeley.edu/cas/login'.
         password: Password of 'https://auth.berkeley.edu/cas/login'.
         semester: Name of the semester, e.g. 'summer-2014'.
         per_request_timeout: Per request timeout in seconds.
 
-    Output:
+    Returns:
         A dictionary with these fields:
             'status': 'success'/'error'/...
             'message': Message describing the fetch.
             'raw-data': A JSON object of the fetched raw data. May not exist
                 when the fetch fails.
+
+    Raises:
+        None
     """
     try:
         if university not in _univ_collection:
