@@ -24,7 +24,8 @@ strings = {
     'error-incorrect-login': 'Incorrect ID/password. Authentication failed.',
     'error-authenticating': (
         'Error authenticating with university servers. '
-        'Please contact the developers.')
+        'Please contact the developers.'),
+    'error-invalid-semester': 'Not registered for the semester.'
     }
 
 

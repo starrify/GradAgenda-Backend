@@ -16,7 +16,9 @@ __status__ = 'development'
 
 _univ_collection = {}
 import _UCBerkeley
+import _Purdue
 _univ_collection['UCBerkeley'] = _UCBerkeley
+_univ_collection['Purdue'] = _Purdue
 
 
 def fetch_curriculum(
@@ -68,8 +70,10 @@ def fetch_curriculum(
 # For testing purpose only
 
 def main():
+#    ret = fetch_curriculum(
+#        'UCBerkeley', 'a0114792', 'mmk*718AA', 'summer-2014')
     ret = fetch_curriculum(
-        'UCBerkeley', 'a0114792', 'mmk*718AA', 'summer-2014')
+        'Purdue', 'yuan48', 'App123456', 'summer-2014')
     import json
     print(json.dumps(ret, indent=4))
     pass
