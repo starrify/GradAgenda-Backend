@@ -58,13 +58,11 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
     try:
         # Logging in to CAS
         session = requests.Session()
-        display_login_url = 'https://wl.mypurdue.purdue.edu/cp/home/displaylogin'
-        request = session.get(display_login_url, timeout=per_request_timeout)
         login_url = 'https://wl.mypurdue.purdue.edu/cp/home/login'
         login_data = {
             'user': username,
             'pass': password,
-            'uuid': int(time.time())
+            'uuid': int(time.time() * 1000)
             }
         cookies = {
             'query': '',
@@ -77,11 +75,10 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
             data=login_data,
             cookies=cookies,
             timeout=per_request_timeout)
-        succ_msg = (
-            'You are currently logged in.')
-        fail_msg = (
-            ' Failed Login.')
-        print request.text
+        succ_msg = 'https://wl.mypurdue.purdue.edu/cps/welcome/loginok.html'
+        fail_msg = 'Failed Login'
+        print request.request.headers
+        print 'DATA: ', request.text
         if fail_msg in request.text:
             raise _common.FetchError(_common.strings['error-incorrect-login'])
         elif succ_msg not in request.text:
