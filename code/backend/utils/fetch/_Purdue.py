@@ -66,14 +66,21 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
             'pass': password,
             'uuid': int(time.time())
             }
+        cookies = {
+            'query': '',
+            'path': '/',
+            'domain': '.mypurdue.purdue.edu',
+            'expires': 'Thu, 01 Jan 1970 00:00:00 GMT'
+            }
         request = session.post(
             login_url,
             data=login_data,
+            cookies=cookies,
             timeout=per_request_timeout)
         succ_msg = (
             'You are currently logged in.')
         fail_msg = (
-            'Failed Login.')
+            ' Failed Login.')
         print request.text
         if fail_msg in request.text:
             raise _common.FetchError(_common.strings['error-incorrect-login'])
