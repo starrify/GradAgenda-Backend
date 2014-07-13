@@ -75,22 +75,35 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
             data=login_data,
             cookies=cookies,
             timeout=per_request_timeout)
+        session_cookies = request.cookies
         succ_msg = 'https://wl.mypurdue.purdue.edu/cps/welcome/loginok.html'
         fail_msg = 'Failed Login'
-        print request.request.headers
-        print 'DATA: ', request.text
         if fail_msg in request.text:
             raise _common.FetchError(_common.strings['error-incorrect-login'])
         elif succ_msg not in request.text:
             raise _common.FetchError(_common.strings['error-authenticating'])
 
         # Select a Term:
-        select_term_url = 'https://wl.mypurdue.purdue.edu/prod/bwcklibs.P_StoreTerm'
+        auth_url = 'https://wl.mypurdue.purdue.edu/jsp/misc/ss_redir.jsp?pg=26'
+        request = session.get(auth_url, cookies=session_cookies, timeout=per_request_timeout)
+        print request.cookies
+        print request.text
+        auth_url = 'https://wl.mypurdue.purdue.edu/cp/ip/login?sys=sctssb&url=https://selfservice.mypurdue.purdue.edu/prod/tzwkwbis.P_CheckAgreeAndRedir?ret_code=STU_DETSCHED'
+        request = session.get(auth_url, timeout=per_request_timeout)
+        print request.text
+        return
+        select_term_url = 'https://selfservice.mypurdue.purdue.edu/prod/bwskfshd.P_CrseSchdDetl'
+        print semester
         select_term_data = {
-            'name_var': 'bmenu.P_RegMnu',
-            'term_in': semester
+            "term_in": semester
             }
-        request = session.post()
+        request = session.post(
+            select_term_url,
+            data=select_term_data,
+            cookies=session_cookies,
+            timeout=per_request_timeout
+            )
+        print request.text
         fail_msg = (
             'Your self-service session has either timed out or become invalid. Please close all your browser windows and reconnect to myPurdue using a new browser window.')
         if fail_msg in request.text:
