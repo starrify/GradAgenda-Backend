@@ -30,7 +30,8 @@ def register(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':
         users = User.objects.all()
         serializer = RegisterSerializer(users, many=True)
@@ -68,6 +69,15 @@ def login(request):
     m.update(email)
     m.update(time.strftime("%y%m%d%H%M%S",time.localtime()))
     token = m.hexdigest()
+    # insure the token is unique
+    while True:
+        try:
+            user_state = UserState.objects.get(token=token)
+            m.update(time.strftime("%y%m%d%H%M%S",time.localtime()))
+            token = m.hexdigest()
+            continue
+        except UserState.DoesNotExist:
+            break
     stateData = {}
     stateData['user']  = user.id
     stateData['token'] = token
