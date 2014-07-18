@@ -5,6 +5,11 @@
 # MacOS archive temp files
 ._.DS_Store
 
+# LibreOffice temp files
+.~lock.*.docx#
+.~lock.*.xlsx#
+.~lock.*.pptx#
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

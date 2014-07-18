@@ -6,8 +6,7 @@ from backend.univinfo.models import Course, Professor
 class CourseItem(models.Model):
 	user = models.ForeignKey(User)
 	course = models.ForeignKey(Course)
-	grade = models.CharField(max_length=10, blank=True)
-	status = models.SmallIntegerField() 
+	status = models.SmallIntegerField()
 	#0 for registered, 1 for selected, 2 for rejected, 3 for passed, 4 for failed
 	def __unicode__(self):
 		return u'%s in course %s' % (self.user, self.course)

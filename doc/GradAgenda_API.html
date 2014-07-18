@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GradAgenda API</title>
+<link rel="stylesheet" href="https://stackedit.io/res-min/themes/base.css" />
+<script type="text/javascript" src="https://stackedit.io/libs/MathJax/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body><div class="container"><h1 id="gradagenda-api-specification">GradAgenda API Specification</h1>
+
+<p>This document is to define communication protocol between GradAgenda frontend and GradAgenda backend.</p>
+
+<h2 id="url-list">URL List</h2>
+
+<p>We will follow REST URL design pattern in URL design. For convenience, all HTTP method will be <strong>POST</strong>.</p>
+
+<p>Some comments:</p>
+
+<ul>
+<li>Since we have discussed that course data should be fetched “lazily”, only when we fetch user’s curriculum data, so maybe <strong>UNINFO</strong> module should be merged into curriculum module?</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:center;">URL</th>
+  <th style="text-align:center;">Function</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td style="text-align:center;">/curriculum/fetch</td>
+  <td style="text-align:center;">Fetch user curriculum data to database</td>
+</tr>
+<tr>
+  <td style="text-align:center;">/curriculum/list</td>
+  <td style="text-align:center;">Get the list of a user’s courses in a semester</td>
+</tr>
+<tr>
+  <td style="text-align:center;">/curriculum/view</td>
+  <td style="text-align:center;">Get the detail of a course</td>
+</tr>
+<tr>
+  <td style="text-align:center;">/curriculum/delete</td>
+  <td style="text-align:center;">Delete a course</td>
+</tr>
+<tr>
+  <td style="text-align:center;">/curriculum/update</td>
+  <td style="text-align:center;">Update a course</td>
+</tr>
+<tr>
+  <td style="text-align:center;"><strong>[TODO] URL for other API need to be determined.</strong></td>
+  <td style="text-align:center;"></td>
+</tr>
+</tbody></table>
+<h2 id="protocol-specification">Protocol Specification</h2>
+
+<p>This chapter will show the request and return data format of each API. JSON will be our only data communication format.</p>
+
+<h3 id="common-field">Common field</h3>
+
+<h4 id="request-data">Request data</h4>
+
+<p>If you see [authentication required] in the following sections, which means the API will require front end to provide token(or other field) for authentication. Since our authentication strategy hasn’t been fixed yet, we will leave the field name for later.</p>
+
+<h4 id="return-data">Return data</h4>
+
+<p>To handle error, every API will return two fields called “status” and “message”. “status” contains a string telling front end whether the operation is success or not. Detail will be included into “message”.</p>
+
+<p>The format of “status” field:</p>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:center;">Status</th>
+  <th style="text-align:center;">Explanation</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td style="text-align:center;">“success”</td>
+  <td style="text-align:center;">operation completed</td>
+</tr>
+<tr>
+  <td style="text-align:center;">“error”</td>
+  <td style="text-align:center;">an error occured</td>
+</tr>
+</tbody></table>
+
+
+<p>The format of “message” field:</p>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:center;">Message</th>
+  <th style="text-align:center;">Status</th>
+</tr>
+</thead>
+<tbody><tr>
+  <td style="text-align:center;">‘Unknown error.’</td>
+  <td style="text-align:center;">‘error’</td>
+</tr>
+<tr>
+  <td style="text-align:center;"><strong>/curriculum/fetch</strong></td>
+  <td style="text-align:center;"></td>
+</tr>
+<tr>
+  <td style="text-align:center;">‘Fetching completed.’</td>
+  <td style="text-align:center;">‘success’</td>
+</tr>
+<tr>
+  <td style="text-align:center;">‘Error communicating with university servers.’</td>
+  <td style="text-align:center;">‘error’</td>
+</tr>
+<tr>
+  <td style="text-align:center;">‘Unknown university name.’</td>
+  <td style="text-align:center;">‘error’</td>
+</tr>
+<tr>
+  <td style="text-align:center;">‘Unknown semester.’</td>
+  <td style="text-align:center;">‘error’</td>
+</tr>
+<tr>
+  <td style="text-align:center;">‘Incorrect ID/password. Authentication failed.’</td>
+  <td style="text-align:center;">‘error’</td>
+</tr>
+<tr>
+  <td style="text-align:center;">‘Error authenticating with university servers. Please contact the developers.’</td>
+  <td style="text-align:center;">‘error’</td>
+</tr>
+<tr>
+  <td style="text-align:center;"><strong>[TODO] message for other APIs need to be determined</strong></td>
+  <td style="text-align:center;"></td>
+</tr>
+</tbody></table>
+
+
+<p>If the functionality of the API is requesting data from server, it will contain a field called “data”. The format of each API is explained in the following section.</p>
+
+<p>General return data structure will be:</p><div class="se-section-delimiter"></div>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">'status'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'message'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'data'</span><span class="pun">:</span><span class="pln"> JSON_OBJECT
+</span><span class="pun">}</span></code></pre>
+
+<h3 id="curriculumfetch">/curriculum/fetch</h3>
+
+<h4 id="request-data-format">Request data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="pun">[</span><span class="pln">authentication required</span><span class="pun">]</span><span class="pln">
+    </span><span class="str">'university'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln"> </span><span class="com">// see below for avaiable value</span><span class="pln">
+    </span><span class="str">'username'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln"> </span><span class="com">// user name of school's curriculum system</span><span class="pln">
+    </span><span class="str">'password'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln"> </span><span class="com">// password of school's curriculum system</span><span class="pln">
+    </span><span class="str">'semester'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln"> </span><span class="com">// see below for available value</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<p>Available value of field ‘university’:</p>
+
+<ul>
+<li>‘UCBerkeley’: University of California, Berkeley</li>
+<li>‘Purdue’: Purdue University</li>
+</ul>
+
+<p>Available value of field ‘semester’: [term]-[year]. [term] could be ‘spring’, ‘summer’, ‘fall’ or ‘winter’. [year] could be ‘2014’, ‘2013’, …. For example, ‘spring-2014’.</p><div class="se-section-delimiter"></div>
+
+<h4 id="return-data-format">Return data format</h4>
+
+<p>no data returned.</p>
+
+<h3 id="curriculumlist">/curriculum/list</h3>
+
+<h4 id="request-data-format-1">Request data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="pun">[</span><span class="pln">authentication required</span><span class="pun">]</span><span class="pln">
+    </span><span class="str">'user_id'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'semester'</span><span class="pln"> </span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<h4 id="return-data-format-1">Return data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    lectures</span><span class="pun">:</span><span class="pln"> </span><span class="pun">[</span><span class="pln">
+        </span><span class="pun">{</span><span class="pln">
+            </span><span class="str">'course_id'</span><span class="pun">:</span><span class="pln"> ID</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">'weedday'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">'starttime'</span><span class="pun">:</span><span class="pln"> DATETIME</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">'endtime'</span><span class="pun">:</span><span class="pln"> DATETIME</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">'location'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+            </span><span class="str">'is_discussion'</span><span class="pun">:</span><span class="pln"> BOOLEAN
+        </span><span class="pun">}</span><span class="pln">
+    </span><span class="pun">]</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<h3 id="curriculumview">/curriculum/view</h3>
+
+<h4 id="request-data-format-2">Request data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="pun">[</span><span class="pln">authentication required</span><span class="pun">]</span><span class="pln">
+    </span><span class="str">'course_id'</span><span class="pun">:</span><span class="pln"> ID
+</span><span class="pun">}</span></code></pre>
+
+<h4 id="return-data-format-2">Return data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">'name'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'number'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'college'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'major'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'grade'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'professor'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'description'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<h3 id="curriculumdelete">/curriculum/delete</h3>
+
+<h4 id="request-data-format-3">Request data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="pun">[</span><span class="pln">authentication required</span><span class="pun">]</span><span class="pln">
+    </span><span class="str">'course_id'</span><span class="pun">:</span><span class="pln"> ID
+</span><span class="pun">}</span></code></pre>
+
+<h4 id="return-data-format-3">Return data format</h4>
+
+<p>no data returned.</p>
+
+<h3 id="curriculumupdate">/curriculum/update</h3>
+
+<h4 id="request-data-format-4">Request data format</h4>
+
+<pre class="prettyprint prettyprinted"><code><span class="pun">{</span><span class="pln">
+    </span><span class="str">'course_id'</span><span class="pun">:</span><span class="pln"> ID</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'name'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'number'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'college'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'major'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'grade'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'professor'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+    </span><span class="str">'description'</span><span class="pun">:</span><span class="pln"> STRING</span><span class="pun">,</span><span class="pln">
+</span><span class="pun">}</span></code></pre>
+
+<h4 id="return-data-format-4">Return data format</h4>
+
+<p>no data returned.</p></div></body>
+</html>
