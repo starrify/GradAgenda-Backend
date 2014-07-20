@@ -59,6 +59,7 @@ def fetch_curriculum(
             'message': '%s' % err
             }
     except:
+        raise
         return {
             'status': _common.strings['status-error'],
             'message': _common.strings['error-unknown']
@@ -70,10 +71,8 @@ def fetch_curriculum(
 # For testing purpose only
 
 def main():
-#    ret = fetch_curriculum(
-#        'UCBerkeley', 'a0114792', 'mmk*718AA', 'summer-2014')
     ret = fetch_curriculum(
-        'Purdue', 'yuan48', 'App123456', 'summer-2014')
+        'Purdue', 'yuan48', 'App123456', 'spring-2014')
     import json
     print(json.dumps(ret, indent=4))
     pass

@@ -1,26 +1,29 @@
 #!/usr/bin/env python
 """Fetcher of curriculum for Purdue University"""
 
+import time
 import json
 import requests
 from bs4 import BeautifulSoup
-import time # For field uuid
 
 import _common
 
 # TODO: complete the license and version info
-__author__ = 'Shicheng XU'
+__author__ = 'Shicheng XU, Pengyu CHEN'
 __copyright__ = '2014 Deal College Inc.'
-__credits__ = ['Shicheng XU']
+__credits__ = ['Shicheng XU', 'Pengyu CHEN']
 __license__ = ''
 __version__ = ''
-__maintainer__ = 'Shicheng XU'
-__email__ = 'lightxuzju@gmail.com'
+__maintainer__ = 'Pengyu CHEN'
+__email__ = 'pengyu@libstarrify.so'
 __status__ = 'development'
 
 
 strings = {
     'semester_curriculum': {
+        'spring-2014': 'Spring 2014',
+        },
+    'semester_univinfo': {
         'new-admits-fall-2014': '201515',
         'fall-2014': '201510',
         'summer-2014': '201430',
@@ -30,9 +33,6 @@ strings = {
         'summer-2013': '201330',
         'spring-2013': '201320',
         },
-    'semester_univinfo': {
-        'summer-2014': 'SU',
-        }
     }
 
 
@@ -56,7 +56,7 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
         _common.FetchError: If the fetch cannot complete.
     """
     try:
-        # Logging in to CAS
+        # Logging in to CPS
         session = requests.Session()
         login_url = 'https://wl.mypurdue.purdue.edu/cp/home/login'
         login_data = {
@@ -64,18 +64,10 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
             'pass': password,
             'uuid': int(time.time() * 1000)
             }
-        cookies = {
-            'query': '',
-            'path': '/',
-            'domain': '.mypurdue.purdue.edu',
-            'expires': 'Thu, 01 Jan 1970 00:00:00 GMT'
-            }
         request = session.post(
             login_url,
             data=login_data,
-            cookies=cookies,
             timeout=per_request_timeout)
-        session_cookies = request.cookies
         succ_msg = 'https://wl.mypurdue.purdue.edu/cps/welcome/loginok.html'
         fail_msg = 'Failed Login'
         if fail_msg in request.text:
@@ -83,36 +75,22 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
         elif succ_msg not in request.text:
             raise _common.FetchError(_common.strings['error-authenticating'])
 
-        # Select a Term:
-        auth_url = 'https://wl.mypurdue.purdue.edu/jsp/misc/ss_redir.jsp?pg=26'
-        request = session.get(auth_url, cookies=session_cookies, timeout=per_request_timeout)
-        print request.cookies
-        print request.text
-        auth_url = 'https://wl.mypurdue.purdue.edu/cp/ip/login?sys=sctssb&url=https://selfservice.mypurdue.purdue.edu/prod/tzwkwbis.P_CheckAgreeAndRedir?ret_code=STU_DETSCHED'
-        request = session.get(auth_url, timeout=per_request_timeout)
-        print request.text
-        return
-        select_term_url = 'https://selfservice.mypurdue.purdue.edu/prod/bwskfshd.P_CrseSchdDetl'
-        print semester
-        select_term_data = {
-            "term_in": semester
-            }
-        request = session.post(
-            select_term_url,
-            data=select_term_data,
-            cookies=session_cookies,
-            timeout=per_request_timeout
-            )
-        print request.text
-        fail_msg = (
-            'Your self-service session has either timed out or become invalid. Please close all your browser windows and reconnect to myPurdue using a new browser window.')
-        if fail_msg in request.text:
-            raise _common.FetchError(_common.strings['error-authenticating'])
-
         # Fetching student detail schedule
-        schedule_url = 'https://wl.mypurdue.purdue.edu/cp/ip/login?sys=sctssb&amp;url=https://selfservice.mypurdue.purdue.edu/prod/tzwkwbis.P_CheckAgreeAndRedir?ret_code=STU_DETSCHED'
-        request = session.get(schedule_url, timeout=per_request_timeout)
-        # TODO: error handling
+        session.cookies['sctSession'] = '1'
+        schedule_url = 'https://wl.mypurdue.purdue.edu/cp/school/schedule'
+        session.headers.update({
+            'Referer':
+                'https://wl.mypurdue.purdue.edu/cp/render.UserLayoutRootNode.uP?uP_tparam=utf&utf=/cp/school/schedule'
+            })
+        data = {'currentTerm': semester}
+        request = session.post(
+            schedule_url,
+            data=data,
+            timeout=per_request_timeout)
+
+        # TODO: finish the parsing part below.
+
+        """
 
         # If schedule is fetched..
         soup = BeautifulSoup(request.text)
@@ -131,7 +109,7 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
           course['credits'] = data_tds[5].get_text()
           course['level'] = data_tds[6].get_text()
           course['campus'] = data_tds[7].get_text()
-          
+
           course['meeting_times'] = []
           meeting_time_trs = data_tables[i+1].find_all("tr")
           meeting_time_trs.pop(0) # remove table header
@@ -148,6 +126,8 @@ def fetch_curriculum(username, password, semester, per_request_timeout):
             course['meeting_times'].append(meeting_time)
 
           raw_data['schedule'].append(course)
+        """
+        raw_data = request.text
 
         return {
             'status': _common.strings['status-success'],
