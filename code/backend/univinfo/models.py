@@ -1,31 +1,27 @@
 from django.db import models
 
+class Semester(models.Model):
+	name = models.CharField(max_length=20)
+	start = models.DateField()
+	end = models.DateField()
+
+	def __unicode__(self):
+		return self.name
+
 class University(models.Model):
 	name = models.CharField(max_length=50)
 	shortname = models.CharField(max_length=20)
 	address = models.CharField(max_length=100)
-	semester = models.PositiveIntegerField()
-
-	def __unicode__(self):
-		return self.name
-
-class College(models.Model):
-	name = models.CharField(max_length=50)
-	university = models.ForeignKey(University)
-
-	def __unicode__(self):
-		return self.name
-
-class Department(models.Model):
-	name = models.CharField(max_length=50)
-	college = models.ForeignKey(College)
+	numofsemesters = models.PositiveIntegerField()
+	semester = models.ManyToManyField(Semester)
+	description = models.CharField(max_length=200)
 
 	def __unicode__(self):
 		return self.name
 
 class Major(models.Model):
 	name = models.CharField(max_length=50)
-	department = models.ManyToManyField(Department)
+	shortname = models.CharField(max_length=30)
 
 	def __unicode__(self):
 		return self.name
@@ -39,7 +35,6 @@ class Professor(models.Model):
 	gender = models.CharField(max_length=10)
 	image = models.CharField(max_length=255, blank=True, null=True)
 	university = models.ForeignKey(University)
-	college = models.ManyToManyField(College)
 	email = models.EmailField(blank=True, null=True)
 	phone = models.CharField(max_length=20, blank=True)
 	office = models.CharField(max_length=100)
@@ -51,6 +46,7 @@ class Professor(models.Model):
 
 class OfficeHour(models.Model):
 	professor = models.ForeignKey(Professor)
+	semester = models.ForeignKey(Semester)
 	weekday = models.CharField(max_length=10)
 	starttime = models.TimeField()
 	endtime = models.TimeField()
@@ -60,23 +56,28 @@ class OfficeHour(models.Model):
 		return u'%s\'s office hour on %s' % (self.professor, self.weekday)
 
 class Course(models.Model):
-	title = models.CharField(max_length=50)		#title
-	semester = models.CharField(max_length=20)	#termYear+'whatever makes it unique'(perhaps from course_id)
-	code = models.CharField(max_length=50)		#course_code
-	catalog = models.CharField(max_length=20, blank=True, null=True)	#courseCatalog
-	section = models.CharField(max_length=20)	#section_label
-	department = models.ManyToManyField(Department)		#dept_desc	
-	instructor = models.ManyToManyField(Professor)	#instructor
-	unit = models.FloatField()	#unit
-	description = models.CharField(max_length=200) #some other information dependent on specific universities
+	name = models.CharField(max_length=50)
+	number = models.CharField(max_length=30)
+	major = models.ManyToManyField(Major)
+	
+	def __unicode__(self):
+		return self.name
+
+class Section(models.Model):
+	name = models.CharField(max_length=50)
+	number = models.CharField(max_length=30)
+	course = models.ForeignKey(Course)
+	professor = models.ManyToManyField(Professor)
+	description = models.CharField(max_length=200)
 	rate = models.FloatField()
 	ratecount = models.IntegerField()
 
 	def __unicode__(self):
 		return self.title
 
-class Class(models.Model):   #Changed from Lecture
-	course = models.ForeignKey(Course)
+class Lecture(models.Model):
+	section = models.ForeignKey(Section)
+	semester = models.ForeignKey(Semester)
 	weekday = models.CharField(max_length=10)	#extracted from $schedule
 	starttime = models.TimeField()	#extracted from $schedule
 	endtime = models.TimeField()	#extracted from $schedule
