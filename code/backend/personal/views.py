@@ -12,7 +12,7 @@ register module:
 input: data refer to personal.models
 response:
 1,status ("success" means request successfully)
-2,info   (possible reason for any "fail", such as user already exist, lost required information and so on)
+2,message   (possible reason for any "fail", such as user already exist, lost required information and so on)
 
 'GET' API is just for testing
 """
@@ -29,9 +29,11 @@ def register(request):
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            ret = produceRetCode("success")
+            return Response(ret, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            ret = produceRetCode('fail', 'invalid user data')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':
         users = User.objects.all()
         serializer = RegisterSerializer(users, many=True)
@@ -45,7 +47,7 @@ login module:
 This module is for ordinary login, not include OAuth function
 
 input: email and password
-response: status, info, and data['token']
+response: status, message, and data['token']
 
 Following circumstances may cause 'fail':
 1, user_email doesn't exist in the user table
@@ -59,7 +61,7 @@ def login(request):
     try:
         user = User.objects.get(email = email)
     except User.DoesNotExist:
-        ret = produceRetCode('error', 'user does not exist')
+        ret = produceRetCode('fail', 'user does not exist')
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
     if request.META.has_key('HTTP_X_FORWARDED_FOR'):
         ip =  request.META['HTTP_X_FORWARDED_FOR']
@@ -84,21 +86,14 @@ def login(request):
     stateData['ip']    = ip
     if request.DATA['password'] == user.password:
         ret = produceRetCode('success')
-        try:
-            state = UserState.objects.get(user = user.id, ip = ip)
-            if state:
-                ret = produceRetCode('error','user already online')
-                return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
-        except UserState.DoesNotExist:
-            print stateData
-            serializer = UserStateSerializer(data=stateData)
-            if serializer.is_valid():
-                serializer.save()
-                ret = produceRetCode('success','return token',stateData)
-                return Response(ret, status=status.HTTP_200_OK)
-            else:
-                ret = produceRetCode('error', 'invalid UserState data')
-                return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        serializer = UserStateSerializer(data=stateData)
+        if serializer.is_valid():
+            serializer.save()
+            ret = produceRetCode('success','',stateData)
+            return Response(ret, status=status.HTTP_200_OK)
+        else:
+            ret = produceRetCode('error', 'invalid UserState data')
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
         ret = produceRetCode('fail','user_email or password error')
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -108,7 +103,7 @@ def login(request):
 logout module:
 
 input: token (got when login)
-response: status, info
+response: status, message
 """
 @api_view(['POST'])
 def logout(request):
@@ -130,7 +125,7 @@ input:
 
 response:
 1, stauts (success, fail or error)
-2, info (return error information when request fail)
+2, message (return error information when request fail)
 
 """
 @api_view(['POST'])
@@ -149,7 +144,7 @@ def edit(request):
     if user.password == request.DATA['data']['password']:
         pass
     else:
-        ret = produceRetCode("error", "invalid operation")
+        ret = produceRetCode("fail", "invalid operation")
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
     if request.method == "POST":
         serializer = RegisterSerializer(user, data = request.DATA['data'])
@@ -191,11 +186,11 @@ def editPw(request):
 
 
 
-def produceRetCode(status = "error", info = "", data = []):
+def produceRetCode(status = "error", message = "", data = []):
     ret = {}
     ret['status'] = status
-    if info:
-        ret['info']   = info
+    if message:
+        ret['message']   = message
     if data:
         ret['data']   = data
     return ret
