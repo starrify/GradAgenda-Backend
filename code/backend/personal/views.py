@@ -5,7 +5,7 @@ from backend.personal.serializers import RegisterSerializer, UserStateSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from backend.personal.auth import authenticated
 """
 register module:
 
@@ -16,6 +16,7 @@ response:
 
 'GET' API is just for testing
 """
+
 @api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
@@ -163,6 +164,7 @@ input: token, old_password, new_password
 response: the same with edit module
 """
 @api_view(['POST'])
+@authenticated
 def editPw(request):
     token = request.DATA['token']
     try:
