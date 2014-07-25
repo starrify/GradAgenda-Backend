@@ -1,13 +1,5 @@
 from django.db import models
 
-class Semester(models.Model):
-	name = models.CharField(max_length=20)
-	start = models.DateField()
-	end = models.DateField()
-
-	def __unicode__(self):
-		return self.name
-
 class University(models.Model):
 	name = models.CharField(max_length=50)
 	shortname = models.CharField(max_length=20)
@@ -68,6 +60,8 @@ class Section(models.Model):
 	number = models.CharField(max_length=30)
 	course = models.ForeignKey(Course)
 	professor = models.ManyToManyField(Professor)
+	start = models.DateField()
+	end = models.DateField()
 	description = models.CharField(max_length=200)
 	rate = models.FloatField()
 	ratecount = models.IntegerField()
@@ -77,7 +71,6 @@ class Section(models.Model):
 
 class Lecture(models.Model):
 	section = models.ForeignKey(Section)
-	semester = models.ForeignKey(Semester)
 	weekday = models.CharField(max_length=10)	#extracted from $schedule
 	starttime = models.TimeField()	#extracted from $schedule
 	endtime = models.TimeField()	#extracted from $schedule
