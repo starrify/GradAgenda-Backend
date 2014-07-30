@@ -5,7 +5,6 @@ class University(models.Model):
 	shortname = models.CharField(max_length=20)
 	address = models.CharField(max_length=100)
 	numofsemesters = models.PositiveIntegerField()
-	semester = models.ManyToManyField(Semester)
 	description = models.CharField(max_length=200)
 
 	def __unicode__(self):
@@ -36,16 +35,15 @@ class Professor(models.Model):
 	def __unicode__(self):
 		return u'%s %s' % (self.prefix, self.last_name)
 
-class OfficeHour(models.Model):
-	professor = models.ForeignKey(Professor)
-	semester = models.ForeignKey(Semester)
-	weekday = models.CharField(max_length=10)
-	starttime = models.TimeField()
-	endtime = models.TimeField()
-	location = models.CharField(max_length=100)
+#class OfficeHour(models.Model):
+#	professor = models.ForeignKey(Professor)
+#	weekday = models.CharField(max_length=10)
+#	starttime = models.TimeField()
+#	endtime = models.TimeField()
+#	location = models.CharField(max_length=100)
 
-	def __unicode__(self):
-		return u'%s\'s office hour on %s' % (self.professor, self.weekday)
+#	def __unicode__(self):
+#		return u'%s\'s office hour on %s' % (self.professor, self.weekday)
 
 class Course(models.Model):
 	name = models.CharField(max_length=50)
