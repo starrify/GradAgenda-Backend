@@ -1,13 +1,11 @@
 from django.contrib import admin
 
 # Register your models here.
-from backend.univinfo.models import University, College, Major, Grade, Professor, OfficeHour, Course, Lecture
+from backend.univinfo.models import University, Major, Professor, Course, Section, Lecture
 
 admin.site.register(University)
-admin.site.register(College)
 admin.site.register(Major)
-admin.site.register(Grade)
 admin.site.register(Professor)
-admin.site.register(OfficeHour)
 admin.site.register(Course)
+admin.site.register(Section)
 admin.site.register(Lecture)

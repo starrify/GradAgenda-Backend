@@ -1,10 +1,12 @@
 # Create your views here.
 
 from backend.personal.models import User, UserState
+from backend.univinfo.models import University, Major
 from backend.personal.serializers import RegisterSerializer, UserStateSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.utils.datastructures import MultiValueDictKeyError
 
 """
 register module:
@@ -19,13 +21,39 @@ response:
 @api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
-        email = request.DATA['email']
+        try:
+            email = request.DATA['email']
+        except MultiValueDictKeyError:
+            ret = produceRetCode('fail', 'email is required')
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         try:
             user = User.objects.get(email = email)
-            ret = produceRetCode('fail', 'the user_name exist')
+            ret = produceRetCode('fail', 'email already exist')
             return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
         except User.DoesNotExist:
             pass
+
+        try:
+            universityname = request.DATA['university']
+        except KeyError:
+            universityname = 'Unknown'
+        try:
+            university = University.objects.get(shortname = universityname)
+        except University.DoesNotExist:
+            university = University.objects.get(shortname = "Unknown")
+
+        try:
+            majorname = request.DATA['major']
+        except KeyError:
+            majorname = 'Unknown'
+        try:
+            major = Major.objects.get(shortname = majorname)
+        except University.DoesNotExist:
+            major = Major.objects.get(shortname = "Unknown")
+
+        request.DATA['university'] = university
+        request.DATA['major'] = major
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()

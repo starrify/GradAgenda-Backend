@@ -4,19 +4,19 @@ from backend.personal.models import User,UserState
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name',
-                  'last_name',
-                  'nick_name',
+        fields = ('email',
                   'password',
+                  'nick_name',
+                  'first_name',
+                  'last_name',
                   'gender',
-                  'image',
+                  'phone',
                   'eas_id',
                   'tpa_type',
                   'tpa_id',
+                  'image',
                   'university',
-                  'grade',
-                  'email',
-                  'phone',
+                  'major',
                 )
 
 class UserStateSerializer(serializers.ModelSerializer):
