@@ -1,7 +1,7 @@
 from backend.friend.models import FriendRelation, FriendRequest
 from backend.friend.serializers import RelationSerializer, RequestSerializer
 from backend.personal.models import User, UserState
-from backend.personal.serializers import RegisterSerializer
+from backend.personal.serializers import RegisterSerializer, UserSerializer
 from backend.univinfo.models import University, Major, Course
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -13,8 +13,8 @@ def searchForUser(request):
 	try:
 		query = request.DATA['query']
 	except Exception:
-		ret = produceRetCode('fail', 'event info error')
-		return Response(ret)
+		ret = produceRetCode('fail', 'query required')
+		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
 	userlist1 = User.objects.filter(email=query)
 	userlist2 = User.objects.filter(nick_name=query)
@@ -23,8 +23,9 @@ def searchForUser(request):
 	userlist5 = User.objects.filter(gender=query)
 	userlist6 = User.objects.filter(phone=query)
 	userlist = userlist1 | userlist2 | userlist3 | userlist4 | userlist5 | userlist6
-	serializers = RegisterSerializer(userlist, many=True)
-	return Response(serializers.data)
+	serializers = UserSerializer(userlist, many=True)
+	ret = produceRetCode('success', '', serializers.data)
+	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @authenticated
@@ -33,12 +34,12 @@ def sendFriendRequest(request):
 		receiverid = request.DATA['receiverid']
 	except Exception:
 		ret = produceRetCode('fail', 'receiverid required')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 	try:
 		receiver = User.objects.get(id=receiverid)
 	except User.DoesNotExist:
 		ret = produceRetCode('fail', 'receiver does not exist')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 	data = {}
 	data['sender'] = request.DATA['user'].id
@@ -46,25 +47,25 @@ def sendFriendRequest(request):
 
 	if data['receiver'] == data['sender']:
 		ret = produceRetCode('fail', 'receiver should not be the same as sender')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	fr = FriendRequest.objects.filter(sender=data['sender']).filter(receiver=data['receiver'])
 	try:
 		fr[0]
 		ret = produceRetCode('fail', 'request already exist')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	except IndexError:
 		pass
 	fr = FriendRelation.objects.filter(user1=data['sender']).filter(user2=data['receiver'])
 	try:
 		fr[0]
 		ret = produceRetCode('fail', 'friend already')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	except IndexError:
 		pass
 	fr = FriendRelation.objects.filter(user1=data['sender']).filter(user2=data['receiver'])
 	try:
 		fr[0]
-		ret = produceRetCode('fail', 'friend already')
+		ret = produceRetCode('fail', 'friend already, status=status.HTTP_406_NOT_ACCEPTABLE')
 		return Response(ret)
 	except IndexError:
 		pass
@@ -74,10 +75,10 @@ def sendFriendRequest(request):
 	if serializer.is_valid():
 		serializer.save()
 		ret = produceRetCode('success')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_201_CREATED)
 	else:
 		ret = produceRetCode('fail', 'request format error')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(['GET'])
@@ -85,7 +86,8 @@ def sendFriendRequest(request):
 def getFriendRequest(request):
 	senderlist = FriendRequest.objects.filter(receiver=request.DATA['user'].id)
 	serializer = RequestSerializer(senderlist, many=True)
-	return Response(serializer.data)
+	ret = produceRetCode('success', '', serializer.data)
+	return Response(ret, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -95,15 +97,15 @@ def acceptFriendRequest(request):
 		requestid = request.DATA['requestid']
 	except Exception:
 		ret = produceRetCode('fail', 'request id required')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 	try:
 		fr = FriendRequest.objects.get(id = requestid)
 	except FriendRequest.DoesNotExist:
 		ret = produceRetCode('fail', 'request does not exist')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	if fr.receiver.id != request.DATA['user'].id:
 		ret = produceRetCode('fail', 'permission denied')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 	data = {}
 	data['user1'] = request.DATA['user'].id
@@ -112,14 +114,14 @@ def acceptFriendRequest(request):
 	try:
 		frelation[0]
 		ret = produceRetCode('fail', 'friend already')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	except IndexError:
 		pass
 	frelation = FriendRelation.objects.filter(user2=data['user1']).filter(user1=data['user2'])
 	try:
 		frelation[0]
 		ret = produceRetCode('fail', 'friend already')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	except IndexError:
 		pass
 
@@ -128,10 +130,10 @@ def acceptFriendRequest(request):
 		serializer.save()
 		fr.delete()
 		ret = produceRetCode('success')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_200_OK)
 	else:
 		ret = produceRetCode('fail', 'friend relation format error')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 @api_view(['POST'])
@@ -141,28 +143,31 @@ def rejectFriendRequest(request):
 		requestid = request.DATA['requestid']
 	except Exception:
 		ret = produceRetCode('fail', 'request id required')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 	try:
 		fr = FriendRequest.objects.get(id = requestid)
 	except FriendRequest.DoesNotExist:
 		ret = produceRetCode('fail', 'request does not exist')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	if fr.receiver.id != request.DATA['user'].id:
 		ret = produceRetCode('fail', 'permission denied')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 	fr.delete()
 	ret = produceRetCode('success')
-	return Response(ret)
+	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @authenticated
 def getFriendList(request):
+	data = []
+	tmp = {}
 	friendlist1 = FriendRelation.objects.filter(user1=request.DATA['user'].id)
 	friendlist2 = FriendRelation.objects.filter(user2=request.DATA['user'].id)
 	friendlist = friendlist1 | friendlist2
 	serializer = RelationSerializer(friendlist, many=True)
-	return Response(serializer.data)
+	ret = produceRetCode('success', '', serializer.data)
+	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def isFriend(request):
@@ -171,7 +176,7 @@ def isFriend(request):
 		user2 = request.DATA['user2']
 	except Exception:
 		ret = produceRetCode('fail', 'input data format error')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 	fr1 = FriendRelation.objects.filter(user1=user1).filter(user2=user2)
 	fr2 = FriendRelation.objects.filter(user2=user1).filter(user1=user2)
 	fr = fr1 | fr2
@@ -187,7 +192,7 @@ def deleteFriend(request):
 		friendid = request.DATA['friendid']
 	except KeyError:
 		ret = produceRetCode('fail', 'friend id required')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 	success = False
 	fr = FriendRelation.objects.filter(user1 = friendid).filter(user2 = request.DATA['user'].id)
 	try:
@@ -205,9 +210,9 @@ def deleteFriend(request):
 		pass
 	if success:
 		ret = produceRetCode('success')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_204_NO_CONTENT)
 	else:
 		ret = produceRetCode('fail', 'not friend yet')
-		return Response(ret)
+		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 

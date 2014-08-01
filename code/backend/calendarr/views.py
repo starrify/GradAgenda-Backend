@@ -14,9 +14,9 @@ def addEvent(request):
     if serializer.is_valid():
     	serializer.save()
     	ret = produceRetCode('success')
-    	return Response(ret)
-    ret = produceRetCode('fail', 'event info error')
-    return Response(ret)
+    	return Response(ret, status=status.HTTP_201_CREATED)
+    ret = produceRetCode('fail', 'event data format error')
+    return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 @api_view(['GET'])
 @authenticated
@@ -34,17 +34,23 @@ def getEventsInRange(request):
         pass
 
     serializer = EventSerializer(events, many=True)
-    return Response(serializer.data)
+    ret = produceRetCode('success', '', serializer.data)
+    return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @authenticated
 def alterEvent(request):
     request.DATA['user'] = request.DATA['user'].id
     try:
-        event = EventItem.objects.get(id=request.DATA['id'])
-    except Exception:
+        eventid = request.DATA['id']
+    except KeyError:
+        ret = produceRetCode('fail', 'event id required')
+        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        EventItem.objects.get(id = eventid)
+    except EventItem.DoesNotExist:
         ret = produceRetCode('fail', 'event does not exist')
-        return Response(ret)
+        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
     if event.user.id == request.DATA['user']:
         pass
     else:
@@ -53,20 +59,22 @@ def alterEvent(request):
 
     if request.method == 'GET':
         serializer = EventSerializer(event)
-        return Response(serializer.data)
+        ret = produceRetCode('success', '', serializer.data)
+        return Response(ret, status=status.HTTP_200_OK)
 
     if request.method == 'PUT':
         serializer = EventSerializer(event, data=request.DATA)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            ret = produceRetCode('success')
+            return Response(ret, status=status.HTTP_200_OK)
         else:
-            ret = produceRetCode('fail', 'event info error')
-            return Response(ret)
+            ret = produceRetCode('fail', 'event data format error')
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if request.method == 'DELETE':
         event.delete()
         ret = produceRetCode('success')
-        return Response(ret)
+        return Response(ret, status=status.HTTP_204_NO_CONTENT)
 
 

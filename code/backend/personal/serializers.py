@@ -20,6 +20,21 @@ class RegisterSerializer(serializers.ModelSerializer):
                   'major',
                 )
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id',
+                  'email',
+                  'nick_name',
+                  'first_name',
+                  'last_name',
+                  'gender',
+                  'phone',
+                  'image',
+                  'university',
+                  'major',
+                )
+
 class UserStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserState
