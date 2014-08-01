@@ -5,10 +5,9 @@ from backend.personal.models import User
 
 class EventItem(models.Model):
 	user = models.ForeignKey(User)
-	name = models.CharField(max_length=100)
+	name = models.CharField(max_length=100, default='Unknown')
 	startdatetime = models.DateTimeField()
-	enddatetime = models.DateTimeField()
-	location = models.CharField(max_length=100, default='')
+	location = models.CharField(max_length=100, default='Unknown')
 	status = models.SmallIntegerField(default=0) 
 	#0 for normal, 1 for urgent, 2 for past
 	def __unicode__(self):

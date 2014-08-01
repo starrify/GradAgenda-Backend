@@ -4,33 +4,13 @@ from backend.personal.models import User, UserState
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from backend.personal.views import produceRetCode
+from backend.personal.views import produceRetCode, authenticated
 
 @api_view(['POST'])
-def addevent(request):
-	token = request.DATA['token']
-	try:
-		state = UserState.objects.get(token=token)
-	except UserState.DoesNotExist:
-		ret = produceRetCode('fail', 'user does not login')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-	try:
-        user = User.objects.get(id=state.user.id)
-        data = {}
-        data['user'] = user.id
-	except User.DoesNotExist:
-		ret = produceRetCode('error', 'database inconsistent')
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    try:
-    	data['name'] = request.DATA['eventname']
-    	data['startdatetime'] = request.DATA['startdatetime']
-    	data['enddatetime'] = request.DATA['enddatetime']
-    	data['location'] = request.DATA['location']
-    	data['status'] = request.DATA['status']
-    except KeyError:
-    	ret = produceRetCode('error', 'input error')
-    	return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    serializer = EventSerializer(data=data)
+@authenticated
+def addEvent(request):
+    request.DATA['user'] = request.DATA['user'].id
+    serializer = EventSerializer(data=request.DATA)
     if serializer.is_valid():
     	serializer.save()
     	ret = produceRetCode('success')
@@ -38,9 +18,55 @@ def addevent(request):
     ret = produceRetCode('fail', 'event info error')
     return Response(ret)
 
-    
+@api_view(['GET'])
+@authenticated
+def getEventsInRange(request):
+    events = EventItem.objects.filter(user = request.DATA['user'])
+    try:
+        left = request.DATA['left']
+        events = events.filter(startdatetime__gte = left)
+    except KeyError:
+        pass
+    try:
+        right = request.DATA['right']
+        events = events.filter(startdatetime__lte = right)
+    except KeyError:
+        pass
 
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
 
+@api_view(['GET', 'PUT', 'DELETE'])
+@authenticated
+def alterEvent(request):
+    request.DATA['user'] = request.DATA['user'].id
+    try:
+        event = EventItem.objects.get(id=request.DATA['id'])
+    except Exception:
+        ret = produceRetCode('fail', 'event does not exist')
+        return Response(ret)
+    if event.user.id == request.DATA['user']:
+        pass
+    else:
+        ret = produceRetCode('fail', 'permission denied')
+        return Response(ret)
 
+    if request.method == 'GET':
+        serializer = EventSerializer(event)
+        return Response(serializer.data)
+
+    if request.method == 'PUT':
+        serializer = EventSerializer(event, data=request.DATA)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            ret = produceRetCode('fail', 'event info error')
+            return Response(ret)
+
+    if request.method == 'DELETE':
+        event.delete()
+        ret = produceRetCode('success')
+        return Response(ret)
 
 

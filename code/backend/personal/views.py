@@ -8,16 +8,27 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils.datastructures import MultiValueDictKeyError
 
-"""
-register module:
+def authenticated(method):
+    def wrapper(request):
+        try:
+            token = request.DATA['token']
+        except Exception:
+            ret = produceRetCode('fail', 'token required')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            state = UserState.objects.get(token=token)
+        except UserState.DoesNotExist:
+            ret = produceRetCode('fail', 'user did not login')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(id=state.user.id)
+            request.DATA['user'] = user
+        except User.DoesNotExist:
+            ret = produceRetCode('error', 'database inconsistent')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return method(request)
+    return wrapper
 
-input: data refer to personal.models
-response:
-1,status ("success" means request successfully)
-2,message   (possible reason for any "fail", such as user already exist, lost required information and so on)
-
-'GET' API is just for testing
-"""
 @api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
@@ -52,15 +63,15 @@ def register(request):
         except University.DoesNotExist:
             major = Major.objects.get(shortname = "Unknown")
 
-        request.DATA['university'] = university
-        request.DATA['major'] = major
+        request.DATA['university'] = university.id
+        request.DATA['major'] = major.id
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()
             ret = produceRetCode("success")
             return Response(ret, status=status.HTTP_201_CREATED)
         else:
-            ret = produceRetCode('fail', 'invalid user data')
+            ret = produceRetCode('fail', 'invalid user data', request.DATA)
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':
         users = User.objects.all()
@@ -157,29 +168,44 @@ response:
 
 """
 @api_view(['POST'])
+@authenticated
 def edit(request):
-    token = request.DATA['token']
     try:
-        state = UserState.objects.get(token = token)
-    except UserState.DoesNotExist:
-        ret = produceRetCode("fail", "user doesn't login")
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        user = User.objects.get(id = state.user.id)
-    except User.DoesNotExist:
-        ret = produceRetCode("error", "database inconsistent")
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    if user.password == request.DATA['data']['password']:
-        pass
-    else:
-        ret = produceRetCode("fail", "invalid operation")
+        if user.password == request.DATA['password']:
+            pass
+        else:
+            ret = produceRetCode("fail", "invalid password")
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+    except KeyError:
+        ret = produceRetCode("fail", "password required")
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
-    if request.method == "POST":
-        serializer = RegisterSerializer(user, data = request.DATA['data'])
-        if serializer.is_valid():
-            serializer.save()
-            ret = produceRetCode('success')
-            return Response(ret)
+    try:
+        universityname = request.DATA['university']
+    except KeyError:
+        universityname = 'Unknown'
+    try:
+        university = University.objects.get(shortname = universityname)
+    except University.DoesNotExist:
+        university = University.objects.get(shortname = "Unknown")
+
+    try:
+        majorname = request.DATA['major']
+    except KeyError:
+        majorname = 'Unknown'
+    try:
+        major = Major.objects.get(shortname = majorname)
+    except University.DoesNotExist:
+        major = Major.objects.get(shortname = "Unknown")
+
+    request.DATA['university'] = university.id
+    request.DATA['major'] = major.id
+
+    serializer = RegisterSerializer(user, data = request.DATA)
+    if serializer.is_valid():
+        serializer.save()
+        ret = produceRetCode('success')
+        return Response(ret)
+    else:
         ret = produceRetCode('fail', 'user info error')
         return Response(ret)
 
@@ -211,8 +237,6 @@ def editPw(request):
     else:
         ret = produceRetCode('fail', 'Password error')
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-
 
 def produceRetCode(status = "error", message = "", data = []):
     ret = {}
