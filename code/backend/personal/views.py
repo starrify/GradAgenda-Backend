@@ -1,45 +1,83 @@
 # Create your views here.
 
 from backend.personal.models import User, UserState
+from backend.univinfo.models import University, Major
 from backend.personal.serializers import RegisterSerializer, UserStateSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from backend.personal.auth import authenticated
-from backend.personal.common import produceRetCode, MESSAGES
-"""
-register module:
+from django.utils.datastructures import MultiValueDictKeyError
 
-input: data refer to personal.models
-response:
-1,status ("success" means request successfully)
-2,message   (possible reason for any "fail", such as user already exist, lost required information and so on)
-
-'GET' API is just for testing
-"""
+def authenticated(method):
+    def wrapper(request):
+        try:
+            token = request.DATA['token']
+        except Exception:
+            ret = produceRetCode('fail', 'token required')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            state = UserState.objects.get(token=token)
+        except UserState.DoesNotExist:
+            ret = produceRetCode('fail', 'user did not login')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(id=state.user.id)
+        except User.DoesNotExist:
+            ret = produceRetCode('error', 'database inconsistent')
+            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        request.DATA['user'] = user
+        return method(request)
+    return wrapper
 
 @api_view(['GET', 'POST'])
 def register(request):
     if request.method == 'POST':
-        email = request.DATA['email']
+        try:
+            email = request.DATA['email']
+        except MultiValueDictKeyError:
+            ret = produceRetCode('fail', 'email is required')
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         try:
             user = User.objects.get(email = email)
-            ret = produceRetCode('fail', MESSAGES['fail_user_exist'])
+            ret = produceRetCode('fail', 'email already exist')
             return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
         except User.DoesNotExist:
             pass
+
+        try:
+            universityname = request.DATA['university']
+        except KeyError:
+            universityname = 'Unknown'
+        try:
+            university = University.objects.get(shortname = universityname)
+        except University.DoesNotExist:
+            university = University.objects.get(shortname = "Unknown")
+
+        try:
+            majorname = request.DATA['major']
+        except KeyError:
+            majorname = 'Unknown'
+        try:
+            major = Major.objects.get(shortname = majorname)
+        except University.DoesNotExist:
+            major = Major.objects.get(shortname = "Unknown")
+
+        request.DATA['university'] = university.id
+        request.DATA['major'] = major.id
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()
             ret = produceRetCode("success")
             return Response(ret, status=status.HTTP_201_CREATED)
         else:
-            ret = produceRetCode('fail', MESSAGES['fail_user_data'])
+            ret = produceRetCode('fail', 'register data format error', request.DATA)
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':
         users = User.objects.all()
         serializer = RegisterSerializer(users, many=True)
-        return Response(serializer.data)
+        ret = produceRetCode("success", '', serializer.data)
+        return Response(ret, status=status.HTTP_200_OK)
 
 import time
 import hashlib
@@ -59,12 +97,16 @@ Following circumstances may cause 'fail':
 """
 @api_view(['POST'])
 def login(request):
-    email = request.DATA['email']
+    try:
+        email = request.DATA['email']
+    except Exception:
+        ret = produceRetCode('fail', 'email required')
+        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
     try:
         user = User.objects.get(email = email)
     except User.DoesNotExist:
-        ret = produceRetCode('fail', MESSAGES['fail_user_notExist'])
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        ret = produceRetCode('fail', 'user did not register')
+        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
     if request.META.has_key('HTTP_X_FORWARDED_FOR'):
         ip =  request.META['HTTP_X_FORWARDED_FOR']
     else:
@@ -94,10 +136,10 @@ def login(request):
             ret = produceRetCode('success','',stateData)
             return Response(ret, status=status.HTTP_200_OK)
         else:
-            ret = produceRetCode('error', MESSAGES['error_unknown'])
+            ret = produceRetCode('error', 'invalid UserState data')
             return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
     else:
-        ret = produceRetCode('fail', MESSAGES['fail_emailOrPw'])
+        ret = produceRetCode('fail','invalid email or password')
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
@@ -130,25 +172,54 @@ response:
 @api_view(['POST'])
 @authenticated
 def edit(request):
-    token = request.DATA['token']
+    user = request.DATA['user']
     try:
-        state = UserState.objects.get(token = token)
-        user = User.objects.get(id = state.user.id)
-    except User.DoesNotExist:
-        ret = produceRetCode("error", MESSAGES['error_database'])
+        if user.password == request.DATA['password']:
+            pass
+        else:
+            ret = produceRetCode("fail", "invalid password")
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+    except KeyError:
+        ret = produceRetCode("fail", "password required")
         return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    if user.password == request.DATA['data']['password']:
-        pass
-    else:
-        ret = produceRetCode("fail", MESSAGES['fail_illegal'])
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
-    serializer = RegisterSerializer(user, data = request.DATA['data'])
+    try:
+        if user.email == request.DATA['email']:
+            pass
+        else:
+            ret = produceRetCode("fail", "email can not be changed")
+            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+    except KeyError:
+        ret = produceRetCode("fail", "email required")
+        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        universityname = request.DATA['university']
+    except KeyError:
+        universityname = 'Unknown'
+    try:
+        university = University.objects.get(shortname = universityname)
+    except University.DoesNotExist:
+        university = University.objects.get(shortname = "Unknown")
+
+    try:
+        majorname = request.DATA['major']
+    except KeyError:
+        majorname = 'Unknown'
+    try:
+        major = Major.objects.get(shortname = majorname)
+    except University.DoesNotExist:
+        major = Major.objects.get(shortname = "Unknown")
+
+    request.DATA['university'] = university.id
+    request.DATA['major'] = major.id
+
+    serializer = RegisterSerializer(user, data = request.DATA)
     if serializer.is_valid():
         serializer.save()
         ret = produceRetCode('success')
-        return Response(ret, status = status.HTTP_200_OK)
-    ret = produceRetCode('fail', MESSAGES['fail_user_data'])
-    return Response(ret)
+        return Response(ret, status=status.HTTP_200_OK)
+    else:
+        ret = produceRetCode('fail', 'user info format error')
+        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 """
@@ -160,27 +231,21 @@ response: the same with edit module
 @api_view(['POST'])
 @authenticated
 def editPw(request):
-    token = request.DATA['token']
-    try:
-        state = UserState.objects.get(token = token)
-    except UserState.DoesNotExist:
-        ret = produceRetCode("fail", MESSAGES['fail_notLogin'])
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        user = User.objects.get(id = state.user.id)
-    except User.DoesNotExist:
-        ret = produceRetCode("error", MESSAGES['error_database'])
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+    user = request.DATA['user']
     if user.password == request.DATA['old_password']:
         user.password = request.DATA['new_password']
         user.save()
         ret = produceRetCode('success')
         return Response(ret, status=status.HTTP_200_OK)
     else:
-        ret = produceRetCode('fail', MESSAGES['fail_emailOrPw'])
+        ret = produceRetCode('fail', 'invalid password')
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-
-
-
-
+def produceRetCode(status = "error", message = "", data = []):
+    ret = {}
+    ret['status'] = status
+    if message:
+        ret['message']   = message
+    if data:
+        ret['data']   = data
+    return ret

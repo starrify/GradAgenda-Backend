@@ -55,7 +55,7 @@ class PersonalTests(APITestCase):
                 "university": 1,
                 "email": "abc@13.com",
                 "phone": "1233211123"
-            }
+        }
         data = json.dumps(data)
         response = self.client.post(url, data, content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
