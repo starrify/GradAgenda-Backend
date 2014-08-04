@@ -1,34 +1,30 @@
 from django.db import models
 
 class University(models.Model):
-	name = models.CharField(max_length=50)
-	shortname = models.CharField(max_length=20)
-	address = models.CharField(max_length=100, default='')
-	description = models.CharField(max_length=200, default='')
+	shortname = models.CharField(max_length=30)
+	fullname = models.CharField(max_length=60)	
 
 	def __unicode__(self):
 		return self.name
 
 class Major(models.Model):
-	name = models.CharField(max_length=50)
 	shortname = models.CharField(max_length=30)
-
+	fullname = models.CharField(max_length=60)
+	
 	def __unicode__(self):
 		return self.name
 
 class Professor(models.Model):
 	first_name = models.CharField(max_length=20)
 	last_name = models.CharField(max_length=20)
-	uid = models.CharField(max_length=20, default='')
-	title = models.CharField(max_length=20, default='')
-	prefix = models.CharField(max_length=10, default='')
-	gender = models.CharField(max_length=10, default='')
-	image = models.CharField(max_length=255, default='')
-	university = models.ForeignKey(University, default='Unknown')
+	title = models.CharField(max_length=20, default='Unknown')
+	gender = models.CharField(max_length=10, default='Unknown')
+	image = models.CharField(max_length=255, default='Unknown')
+	university = models.ForeignKey(University)
 	email = models.EmailField(blank=True, null=True)
-	phone = models.CharField(max_length=20, default='')
-	office = models.CharField(max_length=100, default='')
-	description = models.CharField(max_length=200, default='')
+	phone = models.CharField(max_length=20, default='Unknown')
+	office = models.CharField(max_length=100, default='Unknown')
+	description = models.CharField(max_length=200, default='Unknown')
 	rate = models.FloatField(default=0)
 	ratecount = models.IntegerField(default=0)
 	def __unicode__(self):
@@ -47,7 +43,7 @@ class Professor(models.Model):
 class Course(models.Model):
 	name = models.CharField(max_length=50)
 	number = models.CharField(max_length=30)
-	major = models.ManyToManyField(Major, default='Unknown')
+	major = models.ForeignKey(Major, default='Unknown')
 	
 	def __unicode__(self):
 		return self.name
@@ -59,7 +55,7 @@ class Section(models.Model):
 	professor = models.ManyToManyField(Professor)
 	start = models.DateField()
 	end = models.DateField()
-	description = models.CharField(max_length=200, default='')
+	description = models.CharField(max_length=200, default='Unknown')
 	rate = models.FloatField()
 	ratecount = models.IntegerField()
 

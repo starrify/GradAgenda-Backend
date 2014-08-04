@@ -32,6 +32,8 @@ urlpatterns = patterns('',
     url(r'^isfriend/$', 'backend.friend.views.isFriend'),
     url(r'^deletefriend/$', 'backend.friend.views.deleteFriend'),
 
+    url(r'^inputunivinfo/$', 'backend.univinfo.views.inputUnivinfo'),
+
 
 )
 

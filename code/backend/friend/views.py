@@ -16,12 +16,12 @@ def searchForUser(request):
 		ret = produceRetCode('fail', 'query required')
 		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
-	userlist1 = User.objects.filter(email=query)
-	userlist2 = User.objects.filter(nick_name=query)
-	userlist3 = User.objects.filter(first_name=query)
-	userlist4 = User.objects.filter(last_name=query)
-	userlist5 = User.objects.filter(gender=query)
-	userlist6 = User.objects.filter(phone=query)
+	userlist1 = User.objects.filter(email__iexact=query)
+	userlist2 = User.objects.filter(nick_name__iexact=query)
+	userlist3 = User.objects.filter(first_name__iexact=query)
+	userlist4 = User.objects.filter(last_name__iexact=query)
+	userlist5 = User.objects.filter(gender__iexact=query)
+	userlist6 = User.objects.filter(phone__iexact=query)
 	userlist = userlist1 | userlist2 | userlist3 | userlist4 | userlist5 | userlist6
 	serializers = UserSerializer(userlist, many=True)
 	ret = produceRetCode('success', '', serializers.data)

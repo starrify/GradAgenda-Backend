@@ -1,0 +1,24 @@
+Name of all the university we want to support:
+
+Universities with account:             
+
+Name:                                             Short Name:                 Academic calendar:            
+Purdue University, West Lafayette                 PU                          semester（Fall，Spring，Summer）
+University of California, Berkeley                UCB                         semester
+University of North Carolina, Charlotte           UNC Charlotte               semester
+University of North Carolina, Chapel Hill         UNC Chapel Hill             semester
+University of Michigan, Ann Arbor                 UMich Ann Arbor             trimester（Spring, Summer, Fall, Winter)
+Michigan State University                         MSU                         semester
+Columbia University In The City of New York       CU                          semester
+University of Illinois, Urbana Champaign          UIUC                        semester
+University of Illinois, Chicago                   UIC                         semester
+University of Minnesota, Twin Cities              UMN Twin Cities             semester
+Duke University                                   Duke                        semester
+Cornell University                                Cornell                     semester
+Emory University                                  Emory                       semester
+ 
+
+
+
+
+

@@ -50,7 +50,7 @@ def register(request):
         except KeyError:
             universityname = 'Unknown'
         try:
-            university = University.objects.get(shortname = universityname)
+            university = University.objects.get(shortname__iexact = universityname)
         except University.DoesNotExist:
             university = University.objects.get(shortname = "Unknown")
 
@@ -59,7 +59,7 @@ def register(request):
         except KeyError:
             majorname = 'Unknown'
         try:
-            major = Major.objects.get(shortname = majorname)
+            major = Major.objects.get(shortname__iexact = majorname)
         except University.DoesNotExist:
             major = Major.objects.get(shortname = "Unknown")
 
@@ -196,7 +196,7 @@ def edit(request):
     except KeyError:
         universityname = 'Unknown'
     try:
-        university = University.objects.get(shortname = universityname)
+        university = University.objects.get(shortname__iexact = universityname)
     except University.DoesNotExist:
         university = University.objects.get(shortname = "Unknown")
 
@@ -205,7 +205,7 @@ def edit(request):
     except KeyError:
         majorname = 'Unknown'
     try:
-        major = Major.objects.get(shortname = majorname)
+        major = Major.objects.get(shortname__iexact = majorname)
     except Major.DoesNotExist:
         major = Major.objects.get(shortname = "Unknown")
 
