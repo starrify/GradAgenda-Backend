@@ -10,15 +10,17 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from backend.univinfo.models import University
+from backend.univinfo.models import University, Major
 from backend.personal.models import User, UserState
 
 import json
 class PersonalTests(APITestCase):
     def setUp(self):
         self.client = Client()
-        University.objects.create(id = 1, name = "UCB", shortname="UCB", address="C", numofsemesters=4, description="test")
-        university = University.objects.get(id = 1)
+        University.objects.create(id=1, name="UCB", shortname="UCB", address="C", numofsemesters=4, description="test")
+        university = University.objects.get(id=1)
+        Major.objects.create(id=1, name="computer science and technology", shortname="CS")
+        major = Major.objects.get(id=1)
         User.objects.create(id = 1,
                             first_name = "er",
                             last_name = "wang",
@@ -30,6 +32,7 @@ class PersonalTests(APITestCase):
                             tpa_type  = "1",
                             tpa_id    = "0321",
                             university= university,
+                            major     = major,
                             email     = "abc@132.com",
                             phone     = "112333223"
                             )
@@ -44,17 +47,18 @@ class PersonalTests(APITestCase):
         url = reverse('backend.personal.views.register')
         data = {
                 "first_name": "yi",
-                "last_name": "chen",
-                "nick_name": "hehe",
-                "password":"1234",
-                "gender": "fmale",
-                "image": "http",
-                "eas_id": "0001",
-                "tpa_type": "1",
-                "tpa_id": "lala",
-                "university": 1,
-                "email": "abc@13.com",
-                "phone": "1233211123"
+                "last_name" : "chen",
+                "nick_name" : "hehe",
+                "password"  :"1234",
+                "gender"    : "fmale",
+                "image"     : "http",
+                "eas_id"    : "0001",
+                "tpa_type"  : "1",
+                "tpa_id"    : "lala",
+                "university": "UCB",
+                "major"     : "CS",
+                "email"     : "abc@13.com",
+                "phone"     : "1233211123"
         }
         data = json.dumps(data)
         response = self.client.post(url, data, content_type="application/json")
@@ -92,24 +96,24 @@ class PersonalTests(APITestCase):
         url = reverse('backend.personal.views.edit')
         data =  {
             "token": "test",
-            "data": {
-                "first_name" : "test",
-                "last_name"  : "wang",
-                "nick_name"  : "haha",
-                "password"   : "1111",
-                "gender"     : "male",
-                "image"      : "http",
-                "eas_id"     : "0001",
-                "tpa_type"   : "1",
-                "tpa_id"     : "0321",
-                "university" : 1,
-                "email"      : "abc@132.com",
-                "phone"      : "112333223"
-            }
+            "first_name" : "test",
+            "last_name"  : "wang",
+            "nick_name"  : "haha",
+            "password"   : "1111",
+            "gender"     : "male",
+            "image"      : "http",
+            "eas_id"     : "0001",
+            "tpa_type"   : "1",
+            "tpa_id"     : "0321",
+            "university" : "UCB",
+            "major"      : "CS",
+            "email"      : "abc@132.com",
+            "phone"      : "112333223"
         }
         data = json.dumps(data)
         response = self.client.post(url, data, content_type="application/json")
         new_data = User.objects.get(id=1)
+        print response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_data.first_name, "test")
     def test_editPw(self):
@@ -124,4 +128,12 @@ class PersonalTests(APITestCase):
         new_data = User.objects.get(id=1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(new_data.password, "2222")
-
+    def test_info(self):
+        url = reverse('backend.personal.views.userInfo')
+        data = {
+            "token" : "test"
+        }
+        data = json.dumps(data)
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.data['data']['first_name'], "er")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

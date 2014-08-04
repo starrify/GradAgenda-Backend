@@ -18,6 +18,8 @@ urlpatterns = patterns('',
     url(r'^logout/$', 'backend.personal.views.logout'),
     url(r'^edit/$', 'backend.personal.views.edit'),
     url(r'^edit/password/$', 'backend.personal.views.editPw'),
+    url(r'^fblogin/$', 'backend.personal.views.login_facebook'),
+    url(r'^info/$', 'backend.personal.views.userInfo'),
 
 )
 
