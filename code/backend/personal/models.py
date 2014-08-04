@@ -13,10 +13,10 @@ class User(models.Model):
     eas_id = models.CharField(max_length=20, default='Unknown')    #educational administration system id
     tpa_type = models.CharField(max_length=10, default='Unknown')  #third part account type
     tpa_id = models.CharField(max_length=20, default='Unknown')    #third part account id
+    tpa_token = models.CharField(max_length=255, default='Unknown')
     image = models.CharField(max_length=255, default='Unknown')
     university = models.ForeignKey(University)
     major = models.ForeignKey(Major)
-    
 
 class UserState(models.Model):
     user    = models.ForeignKey(User)

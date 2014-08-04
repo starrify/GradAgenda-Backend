@@ -9,3 +9,4 @@ admin.site.register(Professor)
 admin.site.register(Course)
 admin.site.register(Section)
 admin.site.register(Lecture)
+
