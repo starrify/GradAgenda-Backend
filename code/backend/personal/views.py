@@ -206,7 +206,7 @@ def edit(request):
         majorname = 'Unknown'
     try:
         major = Major.objects.get(shortname = majorname)
-    except University.DoesNotExist:
+    except Major.DoesNotExist:
         major = Major.objects.get(shortname = "Unknown")
 
     request.DATA['university'] = university.id
