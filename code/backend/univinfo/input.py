@@ -1,4 +1,5 @@
-from backend.univinfo.models import University, Major
+from backend.univinfo.models import University, Major, Semester
+from datetime import date
 
 def inputUniversities():
 	University.objects.create(id = 1, shortname = 'Unknown', fullname = 'Unknown')
@@ -19,3 +20,6 @@ def inputUniversities():
 def inputMajors():
 	Major.objects.create(id = 1, shortname = 'Unknown', fullname = 'Unknown')
 	Major.objects.create(id = 2, shortname = 'CS', fullname = 'Computer Science')
+
+def inputSemesters():
+	Semester.objects.create(id = 1, name = 'summer-2014', university = University.objects.get(shortname='UCB'), start = date(2014,6,1), end = date(2014,8,31))

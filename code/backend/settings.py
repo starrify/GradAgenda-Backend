@@ -41,7 +41,6 @@ INSTALLED_APPS = (
     'backend.curriculum',
     'backend.calendarr',
     'backend.friend',
-    'backend.chatroom',
     'rest_framework',
 )
 

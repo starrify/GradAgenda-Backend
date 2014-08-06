@@ -90,16 +90,16 @@ url相对路径  | HTTP variable | 功能
 		password: string,		//required
 		email:  string,			//required
 	    nick_name:  string,		//required
-	    first_name:  string,	//required
-		last_name:   string,	//required
-		gender:     string,		//required
-		phone:      string,		//required
-		eas_id:     string,		//required
-	    tpa_type:   string,		//required
-		tpa_id:     string,		//required
-		image:      string, 	//required
-		university: string,		//required, shortname
-		major:      string,		//required, shortname
+	    first_name:  string,	//optinal
+		last_name:   string,	//optinal
+		gender:     string,		//optinal
+		phone:      string,		//optinal
+		eas_id:     string,		//optinal
+	    tpa_type:   string,		//optinal
+		tpa_id:     string,		//optinal
+		image:      string, 	//optinal
+		university: string,		//optinal, shortname
+		major:      string,		//optinal, shortname
 
 		}
 	}

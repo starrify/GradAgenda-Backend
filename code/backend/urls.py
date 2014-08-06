@@ -35,6 +35,15 @@ urlpatterns = patterns('',
     url(r'^deletefriend/$', 'backend.friend.views.deleteFriend'),
 
     url(r'^inputunivinfo/$', 'backend.univinfo.views.inputUnivinfo'),
+    url(r'^getuniversities/$', 'backend.univinfo.views.getUniversities'),
+    url(r'^getmajors/$', 'backend.univinfo.views.getMajors'),
+    url(r'^getsemesters/$', 'backend.univinfo.views.getSemesters'),
+    url(r'^getprofessors/$', 'backend.univinfo.views.getProfessors'),
+    url(r'^getcourse/$', 'backend.univinfo.views.getCourse'),
+    url(r'^getsection/$', 'backend.univinfo.views.getSection'),
+    url(r'^getlectures/$', 'backend.univinfo.views.getLectures'),
+    url(r'^fetchcurriculum/$', 'backend.curriculum.views.fetchCurriculum'),
+    url(r'^getcourselist/$', 'backend.curriculum.views.getCourseList'),
 
 
 )

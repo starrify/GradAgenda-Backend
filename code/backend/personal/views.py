@@ -12,7 +12,7 @@ def authenticated(method):
     def wrapper(request):
         try:
             token = request.DATA['token']
-        except Exception:
+        except KeyError:
             ret = produceRetCode('fail', 'token required')
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -191,7 +191,7 @@ def edit(request):
         ret = produceRetCode('success')
         return Response(ret, status=status.HTTP_200_OK)
     else:
-        ret = produceRetCode('fail', 'user info format error')
+        ret = produceRetCode('fail', 'user data format error')
         return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
