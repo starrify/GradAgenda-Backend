@@ -243,21 +243,22 @@ def login_facebook(request):
         return Response(ret, status=status.HTTP_400_BAD_REQUEST)
     university = University.objects.get(shortname = "Unknown")
     major      = Major.objects.get(shortname = "Unknown")
+
     userData = {
         "first_name": personalInfo['first_name'],
         "last_name" : personalInfo['last_name'],
         "nick_name" : personalInfo['name'],
-        "password"  : "",
+        "password"  : "Unknown",
         "gender"    : personalInfo['gender'],
-        "image"     : "",
-        "eas_id"    : "",
+        "image"     : "Unknown",
+        "eas_id"    : "Unknown",
         "tpa_type"  : "facebook",
         "tpa_id"    : "facebook" + personalInfo['id'],
         "tpa_token" : res['access_token'],
         "university": university.id,  # default university id
         "major"     : major.id,
-        "email"     : "",
-        "phone"     : ""
+        "email"     : "Unknown@test.com",
+        "phone"     : "Unknown"
     }
     try:
         user  = User.objects.get(tpa_id=userData['tpa_id'])
@@ -274,7 +275,7 @@ def login_facebook(request):
             ip    = getIP(request)
             return setUserState(user.id, ip, token)
         else:
-            ret = produceRetCode('error', 'Unknown error')
+            ret = produceRetCode('error', serializer.errors)
             return Response(ret, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
