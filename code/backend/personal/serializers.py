@@ -4,7 +4,7 @@ from backend.personal.models import User,UserState
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id',
+        fields = (
                   'email',
                   'password',
                   'nick_name',

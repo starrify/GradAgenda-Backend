@@ -11,7 +11,7 @@ class User(models.Model):
     gender = models.CharField(max_length=10, default='Unknown')
     phone = models.CharField(max_length=20, default='Unknown')
     tpa_type = models.CharField(max_length=10, default='Unknown')  #third part account type
-    tpa_id = models.CharField(max_length=20, default='Unknown')    #third part account id
+    tpa_id = models.CharField(max_length=50, default='Unknown')    #third part account id
     tpa_token = models.CharField(max_length=255, default='Unknown')
     image = models.CharField(max_length=255, default='Unknown')
     university = models.ForeignKey(University)
