@@ -68,7 +68,7 @@ def register(request):
         serializer = RegisterSerializer(data=request.DATA)
         if serializer.is_valid():
             serializer.save()
-            ret = produceRetCode("success")
+            ret = produceRetCode('success', '', serializer.data)
             return Response(ret, status=status.HTTP_201_CREATED)
         else:
             ret = produceRetCode('fail', 'register data format error', request.DATA)
