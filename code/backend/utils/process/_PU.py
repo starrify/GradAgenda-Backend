@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 """Processor of curriculum for UC Berkeley"""
-import _common
-
 
 # TODO: complete the license and version info
 __author__ = 'Ji YANG'
