@@ -9,10 +9,10 @@ url相对路径  | HTTP variable | 功能
 ----------     | ----------| -------- 
 /searchforuser/     	|    GET    |   搜索用户
 /sendfriendrequest/		|    POST   |   发送好友请求
-/getfriendrequest/		|    GET    |   获取好友请求
+/getfriendrequest/		|    POST   |   获取好友请求
 /acceptfriendrequest/	|    POST   |   通过好友请求
 /rejectfriendrequest/	|    POST   |   拒绝好友请求
-/getfriendlist/			|    GET    |   获取好友列表
+/getfriendlist/			|    POST   |   获取好友列表
 /isfriend/				|    GET    |   判断任意两个用户是否为好友
 /deletefriend/   		|    POST   |   删除好友
 

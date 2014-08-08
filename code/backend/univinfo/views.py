@@ -60,7 +60,7 @@ def getSemesters(request):
 		university = request.DATA['university']
 	except KeyError:
 		ret = produceRetCode('fail', 'university shortname required')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	semesters = Semester.objects.filter(university__shortname=university)
 	serializer = SemesterSerializer(semesters, many=True)
 	ret = produceRetCode('success', '', serializer.data)
@@ -72,12 +72,12 @@ def getCourse(request):
 		sectionid = request.DATA['sectionid']
 	except KeyError:
 		ret = produceRetCode('fail', 'section id required')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	try:
 		section = Section.objects.get(id=sectionid)
 	except Section.DoesNotExist:
 		ret = produceRetCode('fail', 'section not found')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	course = section.course
 	serializer = CourseSerializer(course)
 	ret = produceRetCode('success', '', serializer.data)
@@ -89,12 +89,12 @@ def getSection(request):
 		sectionid = request.DATA['sectionid']
 	except KeyError:
 		ret = produceRetCode('fail', 'section id required')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	try:
 		section = Section.objects.get(id=sectionid)
 	except Section.DoesNotExist:
 		ret = produceRetCode('fail', 'section not found')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 	serializer = SectionSerializer(section)
 	ret = produceRetCode('success', '', serializer.data)
@@ -106,7 +106,7 @@ def getLectures(request):
 		sectionid = request.DATA['sectionid']
 	except KeyError:
 		ret = produceRetCode('fail', 'section id required')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	lectures = Lecture.objects.filter(section__id=sectionid)
 	serializer = LectureSerializer(lectures, many=True)
 	ret = produceRetCode('success', '', serializer.data)

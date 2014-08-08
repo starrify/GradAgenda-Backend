@@ -8,7 +8,7 @@
 url相对路径  | HTTP variable | 功能 
 ----------     | ----------| -------- 
 /addevent/     |    POST   |   新增事件
-/getevent/     |    GET    |   获取自己的事件
+/getevent/     |    POST   |   获取自己的事件
 /alterevent/   |    GET    |   获取单个事件
 /alterevent/   |    PUT    |   修改事件
 /alterevent/   |   DELETE  |   删除事件

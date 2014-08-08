@@ -14,17 +14,17 @@ def authenticated(method):
             token = request.DATA['token']
         except KeyError:
             ret = produceRetCode('fail', 'token required')
-            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
         try:
             state = UserState.objects.get(token=token)
         except UserState.DoesNotExist:
             ret = produceRetCode('fail', 'user did not login')
-            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
         try:
             user = User.objects.get(id=state.user.id)
         except User.DoesNotExist:
             ret = produceRetCode('error', 'database inconsistent')
-            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
         request.DATA['user'] = user
         return method(request)
     return wrapper
@@ -36,12 +36,12 @@ def register(request):
             email = request.DATA['email']
         except MultiValueDictKeyError:
             ret = produceRetCode('fail', 'email is required')
-            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
 
         try:
             user = User.objects.get(email = email)
             ret = produceRetCode('fail', 'email already exist')
-            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
         except User.DoesNotExist:
             pass
 
@@ -69,10 +69,10 @@ def register(request):
         if serializer.is_valid():
             serializer.save()
             ret = produceRetCode('success', '', serializer.data)
-            return Response(ret, status=status.HTTP_201_CREATED)
+            return Response(ret, status=status.HTTP_200_OK)
         else:
             ret = produceRetCode('fail', 'register data format error', request.DATA)
-            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
     elif request.method == 'GET':
         users = User.objects.all()
         serializer = RegisterSerializer(users, many=True)
@@ -101,19 +101,19 @@ def login(request):
         email = request.DATA['email']
     except Exception:
         ret = produceRetCode('fail', 'email required')
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     try:
         user = User.objects.get(email = email)
     except User.DoesNotExist:
         ret = produceRetCode('fail', 'user did not register')
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     if request.DATA['password'] == user.password:
         ip = getIP(request)
         token = produceLoginToken(user.id)
         return setUserState(user.id, ip, token)
     else:
         ret = produceRetCode('fail','invalid email or password')
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 
 """
@@ -129,7 +129,7 @@ def logout(request):
     user_state = UserState.objects.get(token=token)
     user_state.delete()
     ret = produceRetCode('success','logged out successfully')
-    return Response(ret, status=status.HTTP_204_NO_CONTENT)
+    return Response(ret, status=status.HTTP_200_OK)
 
 """
 edit module(password edit not included):
@@ -151,19 +151,19 @@ def edit(request):
             pass
         else:
             ret = produceRetCode("fail", "invalid password")
-            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
     except KeyError:
         ret = produceRetCode("fail", "password required")
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     try:
         if user.email == request.DATA['email']:
             pass
         else:
             ret = produceRetCode("fail", "email can not be changed")
-            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
     except KeyError:
         ret = produceRetCode("fail", "email required")
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     try:
         universityname = request.DATA['university']
     except KeyError:
@@ -192,7 +192,7 @@ def edit(request):
         return Response(ret, status=status.HTTP_200_OK)
     else:
         ret = produceRetCode('fail', 'user data format error')
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 
 """
@@ -212,7 +212,7 @@ def editPw(request):
         return Response(ret, status=status.HTTP_200_OK)
     else:
         ret = produceRetCode('fail', 'invalid password')
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 
 """
@@ -232,15 +232,15 @@ def login_facebook(request):
         code = request.DATA['code']
     except KeyError:
         ret = produceRetCode("fail", "code required")
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     try:
         f = FacebookAPI(APP_ID, APP_SECRET, uri)
         res = f.get_access_token(code) # get long term token
         graph = GraphAPI(res['access_token'])  # access GraphAPI of facebook
         personalInfo = graph.get('me')
     except Exception:
-        ret = produceRetCode("error", "facebook api error")
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        ret = produceRetCode("fail", "facebook api error")
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     university = University.objects.get(shortname = "Unknown")
     major      = Major.objects.get(shortname = "Unknown")
 
@@ -251,7 +251,6 @@ def login_facebook(request):
         "password"  : "Unknown",
         "gender"    : personalInfo['gender'],
         "image"     : "Unknown",
-        "eas_id"    : "Unknown",
         "tpa_type"  : "facebook",
         "tpa_id"    : "facebook" + personalInfo['id'],
         "tpa_token" : res['access_token'],
@@ -275,8 +274,8 @@ def login_facebook(request):
             ip    = getIP(request)
             return setUserState(user.id, ip, token)
         else:
-            ret = produceRetCode('error', serializer.errors)
-            return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+            ret = produceRetCode('fail', 'login data from facebook error', serializer.errors)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 @api_view(['POST'])
 @authenticated
@@ -289,7 +288,6 @@ def userInfo(request):
         "password"  : user.password,
         "gender"    : user.gender,
         "image"     : user.image,
-        "eas_id"    : user.eas_id,
         "tpa_type"  : user.tpa_type,
         "tpa_id"    : user.tpa_id,
         "tpa_token" : user.tpa_token,
@@ -322,7 +320,7 @@ def setUserState(user_id, ip, token):
         return Response(ret, status=status.HTTP_200_OK)
     else:
         ret = produceRetCode('error', 'invalid UserState data')
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 def produceLoginToken(userID):
     userID = str(userID)

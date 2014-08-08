@@ -16,9 +16,9 @@ def addEvent(request):
     	ret = produceRetCode('success')
     	return Response(ret, status=status.HTTP_201_CREATED)
     ret = produceRetCode('fail', 'event data format error')
-    return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+    return Response(ret, status=status.HTTP_202_ACCEPTED)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authenticated
 def getEventsInRange(request):
     events = EventItem.objects.filter(user = request.DATA['user'])
@@ -45,17 +45,17 @@ def alterEvent(request):
         eventid = request.DATA['id']
     except KeyError:
         ret = produceRetCode('fail', 'event id required')
-        return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     try:
         EventItem.objects.get(id = eventid)
     except EventItem.DoesNotExist:
         ret = produceRetCode('fail', 'event does not exist')
-        return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
     if event.user.id == request.DATA['user']:
         pass
     else:
         ret = produceRetCode('fail', 'permission denied')
-        return Response(ret)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
 
     if request.method == 'GET':
         serializer = EventSerializer(event)
@@ -70,11 +70,11 @@ def alterEvent(request):
             return Response(ret, status=status.HTTP_200_OK)
         else:
             ret = produceRetCode('fail', 'event data format error')
-            return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(ret, status=status.HTTP_202_ACCEPTED)
 
     if request.method == 'DELETE':
         event.delete()
         ret = produceRetCode('success')
-        return Response(ret, status=status.HTTP_204_NO_CONTENT)
+        return Response(ret, status=status.HTTP_200_OK)
 
 

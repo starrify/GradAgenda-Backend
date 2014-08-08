@@ -8,7 +8,7 @@
 url相对路径  | HTTP variable | 功能 
 ----------     | ----------| -------- 
 /fetchcurriculum/     	|    POST   |   抓取课表
-/getcourselist/		    |    GET    |   获取课程列表
+/getcourselist/		    |    POST   |   获取课程列表
 
 ####二，数据格式
 

@@ -23,18 +23,18 @@ def fetchCurriculum(request):
 	university = request.DATA['user'].university.shortname
 	if university == 'Unknown':
 		ret = produceRetCode('fail', 'university not supported')
-		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	try:
 		eas_id = request.DATA['eas_id']
 		eas_pwd = request.DATA['eas_pwd']
 	except KeyError:
 		ret = produceRetCode('fail', 'eas id and eas pwd required')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 	try:
 		semester = request.DATA['semester']
 	except KeyError:
 		ret = produceRetCode('fail', 'semester required')
-		return Response(ret, status=status.HTTP_400_BAD_REQUEST)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 	fetched = fetch_curriculum(university, eas_id, eas_pwd, semester)
 	#import pickle
@@ -45,9 +45,9 @@ def fetchCurriculum(request):
 		return Response(ret, status=status.HTTP_200_OK)
 	else:
 		ret = produceRetCode('fail', fetched['message'])
-		return Response(ret, status=status.HTTP_406_NOT_ACCEPTABLE)
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authenticated
 def getCourseList(request):
 	courses = CourseItem.objects.filter(user=request.DATA['user'].id).filter(section__start__lte=datetime.datetime.now()).filter(section__end__gte=datetime.datetime.now())
