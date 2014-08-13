@@ -2,7 +2,8 @@ from django.db import models
 
 class University(models.Model):
 	shortname = models.CharField(max_length=30)
-	fullname = models.CharField(max_length=60)	
+	fullname = models.CharField(max_length=60)
+	supported = models.BooleanField(default=False)	
 
 	def __unicode__(self):
 		return self.fullname

@@ -4,7 +4,7 @@ from datetime import date
 def inputUniversities():
 	University.objects.create(id = 1, shortname = 'Unknown', fullname = 'Unknown')
 	University.objects.create(id = 2, shortname = 'PU', fullname = 'Purdue University, West Lafayette')
-	University.objects.create(id = 3, shortname = 'UCB', fullname = 'University of California, Berkeley')
+	University.objects.create(id = 3, shortname = 'UCB', fullname = 'University of California, Berkeley', supported = True)
 	University.objects.create(id = 4, shortname = 'UNC Charlotte', fullname = 'University of North Carolina, Charlotte')
 	University.objects.create(id = 5, shortname = 'UNC Chapel Hill', fullname = 'University of North Carolina, Chapel Hill')
 	University.objects.create(id = 6, shortname = 'UMich Ann Arbor', fullname = 'University of Michigan, Ann Arbor')

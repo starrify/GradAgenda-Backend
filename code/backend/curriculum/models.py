@@ -15,11 +15,14 @@ class CourseItem(models.Model):
 class Review(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	rate = models.FloatField()
-	comment = models.CharField(max_length=200)
+	comment = models.CharField(max_length=200, default="Not Provided")
 	user = models.ForeignKey(User)
 	professor = models.ForeignKey(Professor, blank=True, null=True)
 	section = models.ForeignKey(Section, blank=True, null=True)
 	is_course = models.BooleanField()	#is this review for section or professor
+
+	class Meta:
+		ordering = ('created',)
 
 	def __unicode__(self):
 		if self.is_course :

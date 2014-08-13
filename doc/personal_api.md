@@ -50,8 +50,21 @@ url相对路径  | HTTP variable | 功能
 请求数据格式：
 
 	{
-		email: string,	//required
-		password: string	//required
+		email		:	string,	//required
+		password	: 	string,	//required
+		first_name	:	string,
+		last_name	:	string,
+		nick_name	:	string,
+		gender		:	string,
+		image		:	string,
+		tpa_type	:	string,
+		tpa_id		:	string,
+		tpa_token	:	string,
+		university	:	integer,
+		major		:	integer,
+		email		:	string,
+		phone		:	string
+		
 	}
 
 返回数据格式：
@@ -147,7 +160,6 @@ url相对路径  | HTTP variable | 功能
 		    first_name: string,
 		    last_name:  string,
 		    nick_name:  string,
-		    password:   string,
 		    gender:     string,
 		    image:      string,
 		    eas_id:     string,

@@ -22,8 +22,10 @@ urlpatterns = patterns('',
     url(r'^info/$', 'backend.personal.views.userInfo'),
 
     url(r'^addevent/$', 'backend.calendarr.views.addEvent'),
-    url(r'^getevents/$', 'backend.calendarr.views.getEventsInRange'),
+    url(r'^geteventlist/$', 'backend.calendarr.views.getEventList'),
+    url(r'^getevent/$', 'backend.calendarr.views.getEvent'),
     url(r'^alterevent/$', 'backend.calendarr.views.alterEvent'),
+    url(r'^deleteevent/$', 'backend.calendarr.views.deleteEvent'),
 
     url(r'^searchforuser/$', 'backend.friend.views.searchForUser'),
     url(r'^sendfriendrequest/$', 'backend.friend.views.sendFriendRequest'),
@@ -35,6 +37,7 @@ urlpatterns = patterns('',
     url(r'^deletefriend/$', 'backend.friend.views.deleteFriend'),
 
     url(r'^inputunivinfo/$', 'backend.univinfo.views.inputUnivinfo'),
+    url(r'^issupported/$', 'backend.univinfo.views.isSupported'),
     url(r'^getuniversities/$', 'backend.univinfo.views.getUniversities'),
     url(r'^getmajors/$', 'backend.univinfo.views.getMajors'),
     url(r'^getsemesters/$', 'backend.univinfo.views.getSemesters'),
@@ -42,8 +45,13 @@ urlpatterns = patterns('',
     url(r'^getcourse/$', 'backend.univinfo.views.getCourse'),
     url(r'^getsection/$', 'backend.univinfo.views.getSection'),
     url(r'^getlectures/$', 'backend.univinfo.views.getLectures'),
+
     url(r'^fetchcurriculum/$', 'backend.curriculum.views.fetchCurriculum'),
     url(r'^getcourselist/$', 'backend.curriculum.views.getCourseList'),
+    url(r'^setreview/$', 'backend.curriculum.views.setReview'),
+    #url(r'^geteventlist/$', 'backend.calendarr.views.getEventList'),
+    url(r'^getreview/$', 'backend.curriculum.views.getReview'),
+    url(r'^deletereview/$', 'backend.curriculum.views.deleteReview'),
 
 
 )

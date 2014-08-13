@@ -4,10 +4,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from backend.personal.views import produceRetCode, authenticated
 from backend.utils.fetch.fetch import fetch_curriculum
-#from backend.univinfo.models import Professor, Course, Section, Lecture
+from backend.univinfo.models import Professor, Section
 #from backend.univinfo.serializers import ProfessorSerializer, CourseSerializer, SectionSerializer, LectureSerializer
-from backend.curriculum.models import CourseItem
-from backend.curriculum.serializers import CourseItemSerializer
+from backend.curriculum.models import CourseItem, Review
+from backend.curriculum.serializers import CourseItemSerializer, ReviewSerializer
 import datetime
 
 _data_processor = {}
@@ -55,6 +55,143 @@ def getCourseList(request):
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
 
-#reviews
+def authreview(method):
+	def wrapper(request):
+		try:
+			rid = request.DATA['rid']
+		except KeyError:
+			ret = produceRetCode('fail', 'rid required')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		try:
+			review = Review.objects.get(id=rid)
+		except Review.DoesNotExist:
+			ret = produceRetCode('fail', 'review does not exist')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		if review.user == request.DATA['user'].id:
+			request.DATA['review'] = review
+		else:
+			ret = produceRetCode('fail', 'permission denied')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		return method(request)
+	return wrapper
+
+@api_view(['POST'])
+@authenticated
+def setReview(request):
+	request.DATA['user'] = request.DATA['user'].id
+	serializer = ReviewSerializer(data=request.DATA)
+	try:
+		is_course = request.DATA['is_course']
+	except KeyError:
+		ret = produceRetCode('fail', 'is_course flag required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	if is_course:
+		try:
+			section = request.DATA['section']
+		except KeyError:
+			ret = produceRetCode('fail', 'section id required')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		try:
+			section = Section.objects.get(id=section)
+		except Section.DoesNotExist:
+			ret = produceRetCode('fail', 'section does not exist')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		try:
+			review = Review.objects.get(user=request.DATA['user'], section=section.id)
+		except Review.DoesNotExist:
+			serializer = ReviewSerializer(data=request.DATA)
+			if serializer.is_valid():
+				serializer.save()
+				try:
+					section.rate = (section.rate * section.ratecount + request.DATA['rate']) / (section.ratecount + 1)
+					section.ratecount = section.ratecount + 1
+					section.save()
+				except Exception:
+					ret = produceRetCode('fail', 'computing error')
+					return Response(ret, status=status.HTTP_202_ACCEPTED)
+			else:
+				ret = produceRetCode('fail', 'add review data format error')
+				return Response(ret, status=status.HTTP_202_ACCEPTED)
+		serializer = ReviewSerializer(review, data=request.DATA)
+		if serializer.is_valid():
+			serializer.save()
+			try:
+				section.rate = (section.rate * section.ratecount - review.rate + request.DATA['rate']) / section.ratecount
+				section.save()
+			except Exception:
+				ret = produceRetCode('fail', 'rate computing error')
+				return Response(ret, status=status.HTTP_202_ACCEPTED)
+		else:
+				ret = produceRetCode('fail', 'change review data format error')
+				return Response(ret, status=status.HTTP_202_ACCEPTED)
+	else:
+		try:
+			professor = request.DATA['professor']
+		except KeyError:
+			ret = produceRetCode('fail', 'professor id required')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		try:
+			professor = Professor.objects.get(id=professor)
+		except Professor.DoesNotExist:
+			ret = produceRetCode('fail', 'professor does not exist')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		try:
+			review = Review.objects.get(user=request.DATA['user'], professor=professor.id)
+		except Review.DoesNotExist:
+			serializer = ReviewSerializer(data=request.DATA)
+			if serializer.is_valid():
+				serializer.save()
+				try:
+					professor.rate = (professor.rate * professor.ratecount + request.DATA['rate']) / (professor.ratecount + 1)
+					professor.ratecount = professor.ratecount + 1
+					professor.save()
+				except Exception:
+					ret = produceRetCode('fail', 'rate computing error')
+					return Response(ret, status=status.HTTP_202_ACCEPTED)
+			else:
+				ret = produceRetCode('fail', 'review data format error')
+				return Response(ret, status=status.HTTP_202_ACCEPTED)
+		serializer = ReviewSerializer(review, data=request.DATA)
+		if serializer.is_valid():
+			serializer.save()
+			try:
+				professor.rate = (professor.rate * professor.ratecount - review.rate + request.DATA['rate']) / professor.ratecount
+				professor.save()
+			except Exception:
+				ret = produceRetCode('fail', 'rate computing error')
+				return Response(ret, status=status.HTTP_202_ACCEPTED)
+		else:
+				ret = produceRetCode('fail', 'review data format error')
+				return Response(ret, status=status.HTTP_202_ACCEPTED)
+
+
+@api_view(['POST'])
+@authenticated
+@authreview
+def getReview(request):
+	serializer = ReviewSerializer(data)
+	ret = produceRetCode('success', '', serializer.data)
+	return Response(ret, status=status.HTTP_202_ACCEPTED)
+
+@api_view(['POST'])
+@authenticated
+@authreview
+def alterReview(request):
+	serializer = ReviewSerializer(review, data=request.DATA)
+	if serializer.is_valid():
+		serializer.save()
+		ret = produceRetCode('success')
+		return Response(ret, status=status.HTTP_200_OK)
+	else:
+		ret = produceRetCode('fail', 'review data format error')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+
+@api_view(['POST'])
+@authenticated
+@authreview
+def deleteReview(request):
+	request.DATA['review'].delete()
+	ret = produceRetCode('success')
+	return Response(ret, status=status.HTTP_200_OK)
 
 

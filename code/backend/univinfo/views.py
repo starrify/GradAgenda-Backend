@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from backend.personal.views import produceRetCode, authenticated
 
 #setting up
-@api_view(['GET'])
+@api_view(['POST'])
 def inputUnivinfo(request):
 	inputUniversities()
 	inputMajors()
@@ -15,7 +15,7 @@ def inputUnivinfo(request):
 	ret = produceRetCode('success')
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getUniversities(request):
 	try:
 		query = request.DATA['query']
@@ -25,10 +25,41 @@ def getUniversities(request):
 	except KeyError:
 		universities = University.objects.all()
 	serializer = UniversitySerializer(universities, many=True)
-	ret = produceRetCode('success', '', serializer.data)
+	try:
+		page = request.DATA['page']
+	except KeyError:
+		page = 1
+	try:
+		items = request.DATA['items']
+	except KeyError:
+		items = 15
+	try:
+		total = len(serializer.data) / items + 1
+		ret = produceRetCode('success', '', {"data": serializer.data[items*(page-1):items*page], "page": page, "total": total})
+		return Response(ret, status=status.HTTP_200_OK)
+	except Exception:
+		ret = produceRetCode('fail', 'page and items must be integers')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+
+@api_view(['POST'])
+def isSupported(request):
+	try:
+		shortname = request.DATA['shortname']
+	except KeyError:
+		ret = produceRetCode('fail', 'university shortname required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	try:
+		university = University.objects.get(shortname__iexact=shortname)
+	except University.DoesNotExist:
+		ret = produceRetCode('fail', 'university not in the database')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	if university.supported:
+		ret = produceRetCode('success', '', 'True')
+	else:
+		ret = produceRetCode('success', '', 'False')
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getMajors(request):
 	try:
 		query = request.DATA['query']
@@ -38,10 +69,23 @@ def getMajors(request):
 	except KeyError:
 		majors = Major.objects.all()
 	serializer = MajorSerializer(majors, many=True)
-	ret = produceRetCode('success', '', serializer.data)
-	return Response(ret, status=status.HTTP_200_OK)
+	try:
+		page = request.DATA['page']
+	except KeyError:
+		page = 1
+	try:
+		items = request.DATA['items']
+	except KeyError:
+		items = 15
+	try:
+		total = len(serializer.data) / items + 1
+		ret = produceRetCode('success', '', {"data": serializer.data[items*(page-1):items*page], "page": page, "total": total})
+		return Response(ret, status=status.HTTP_200_OK)
+	except Exception:
+		ret = produceRetCode('fail', 'page and items must be integers')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getProfessors(request):
 	try:
 		query = request.DATA['query']
@@ -54,7 +98,7 @@ def getProfessors(request):
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getSemesters(request):
 	try:
 		university = request.DATA['university']
@@ -66,7 +110,7 @@ def getSemesters(request):
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getCourse(request):
 	try:
 		sectionid = request.DATA['sectionid']
@@ -83,7 +127,7 @@ def getCourse(request):
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getSection(request):
 	try:
 		sectionid = request.DATA['sectionid']
@@ -100,7 +144,7 @@ def getSection(request):
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def getLectures(request):
 	try:
 		sectionid = request.DATA['sectionid']

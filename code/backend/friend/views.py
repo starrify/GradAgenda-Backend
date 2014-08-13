@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from backend.personal.views import produceRetCode, authenticated
 
-@api_view(['GET'])
+@api_view(['POST'])
 def searchForUser(request):
 	try:
 		query = request.DATA['query']
@@ -169,7 +169,7 @@ def getFriendList(request):
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def isFriend(request):
 	try:
 		user1 = request.DATA['user1']
@@ -181,9 +181,11 @@ def isFriend(request):
 	fr2 = FriendRelation.objects.filter(user2=user1).filter(user1=user2)
 	fr = fr1 | fr2
 	if fr:
-		return Response(True)
+		ret = produceRetCode('success', '', 'True')
+		return Response(ret, status.HTTP_200_OK)
 	else:
-		return Response(False)
+		ret = produceRetCode('success', '', 'False')
+		return Response(ret, status.HTTP_200_OK)
 
 @api_view(['POST'])
 @authenticated
