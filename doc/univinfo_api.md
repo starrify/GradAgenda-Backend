@@ -15,6 +15,8 @@ url相对路径  | HTTP variable | 功能
 /getsection/		|    POST	|   搜索section信息
 /getlectures/		|    POST	|   搜索lecture信息
 /issupported/		|	 POST	|	判断学校是否支持自动同步课程
+/getuniversity/    |    POST   |   根据id搜索学校
+/getmajor/         |    POST   |   根据id搜索专业
 
 ####二，数据格式
 
@@ -204,6 +206,38 @@ url相对路径  | HTTP variable | 功能
 
 	{
 		shortname:		string,		//required
+	}
+	
+返回数据格式：
+
+	JSON:
+	{
+		status:		string,
+		message:	string,
+		data:		'true' or 'false (string)
+	}
+	
+（9）根据id搜索学校：    /getuniversity/
+请求数据格式：
+
+	{
+		id:		integer,		//required
+	}
+	
+返回数据格式：
+
+	JSON:
+	{
+		status:		string,
+		message:	string,
+		data:		'true' or 'false (string)
+	}
+	
+（10）根据id搜索专业：    /getmajor/
+请求数据格式：
+
+	{
+		id:		integer,		//required
 	}
 	
 返回数据格式：

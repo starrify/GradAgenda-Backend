@@ -16,6 +16,38 @@ def inputUnivinfo(request):
 	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
+def getUniversity(request):
+	try:
+		pk = request.DATA['id']
+	except KeyError:
+		ret = produceRetCode('fail', 'id required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	try:
+		university = University.objects.get(id=pk)
+	except University.DoesNotExist:
+		ret = produceRetCode('fail', 'university does not exist')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	serializer = UniversitySerializer(university)
+	ret = produceRetCode('success', '', serializer.data)
+	return Response(ret, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def getMajor(request):
+	try:
+		pk = request.DATA['id']
+	except KeyError:
+		ret = produceRetCode('fail', 'id required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	try:
+		major = Major.objects.get(id=pk)
+	except Major.DoesNotExist:
+		ret = produceRetCode('fail', 'major does not exist')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	serializer = MajorSerializer(major)
+	ret = produceRetCode('success', '', serializer.data)
+	return Response(ret, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
 def getUniversities(request):
 	try:
 		query = request.DATA['query']

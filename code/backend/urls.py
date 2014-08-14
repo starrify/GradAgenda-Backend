@@ -45,6 +45,8 @@ urlpatterns = patterns('',
     url(r'^getcourse/$', 'backend.univinfo.views.getCourse'),
     url(r'^getsection/$', 'backend.univinfo.views.getSection'),
     url(r'^getlectures/$', 'backend.univinfo.views.getLectures'),
+    url(r'^getuniversity/$', 'backend.univinfo.views.getUniversity'),
+    url(r'^getmajor/$', 'backend.univinfo.views.getMajor'),
 
     url(r'^fetchcurriculum/$', 'backend.curriculum.views.fetchCurriculum'),
     url(r'^getcourselist/$', 'backend.curriculum.views.getCourseList'),
