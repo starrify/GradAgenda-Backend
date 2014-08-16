@@ -16,35 +16,41 @@ def inputUnivinfo(request):
 	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-def getUniversity(request):
+def getUniversitiesInfo(request):
 	try:
-		pk = request.DATA['id']
+		ids = request.DATA['ids']
 	except KeyError:
-		ret = produceRetCode('fail', 'id required')
+		ret = produceRetCode('fail', 'id list required')
 		return Response(ret, status=status.HTTP_202_ACCEPTED)
-	try:
-		university = University.objects.get(id=pk)
-	except University.DoesNotExist:
-		ret = produceRetCode('fail', 'university does not exist')
-		return Response(ret, status=status.HTTP_202_ACCEPTED)
-	serializer = UniversitySerializer(university)
-	ret = produceRetCode('success', '', serializer.data)
+	universities = []
+	for pk in ids:
+		try:
+			university = University.objects.get(id=pk)
+		except University.DoesNotExist:
+			ret = produceRetCode('fail', 'university does not exist')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		serializer = UniversitySerializer(university)
+		universities.append(serializer.data)
+	ret = produceRetCode('success', '', universities)
 	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
-def getMajor(request):
+def getMajorsInfo(request):
 	try:
-		pk = request.DATA['id']
+		ids = request.DATA['ids']
 	except KeyError:
-		ret = produceRetCode('fail', 'id required')
+		ret = produceRetCode('fail', 'id list required')
 		return Response(ret, status=status.HTTP_202_ACCEPTED)
-	try:
-		major = Major.objects.get(id=pk)
-	except Major.DoesNotExist:
-		ret = produceRetCode('fail', 'major does not exist')
-		return Response(ret, status=status.HTTP_202_ACCEPTED)
-	serializer = MajorSerializer(major)
-	ret = produceRetCode('success', '', serializer.data)
+	majors = []
+	for pk in ids:
+		try:
+			major = Major.objects.get(id=pk)
+		except Major.DoesNotExist:
+			ret = produceRetCode('fail', 'major does not exist')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		serializer = MajorSerializer(major)
+		majors.append(serializer.data)
+	ret = produceRetCode('success', '', majors)
 	return Response(ret, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -187,3 +193,24 @@ def getLectures(request):
 	serializer = LectureSerializer(lectures, many=True)
 	ret = produceRetCode('success', '', serializer.data)
 	return Response(ret, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def getCoursesInfo(request):
+	try:
+		ids = request.DATA['ids']
+	except KeyError:
+		ret = produceRetCode('fail', 'course id list required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	courses = []
+	for pk in ids:
+		try:
+			course = Course.objects.get(id=pk)
+		except Course.DoesNotExist:
+			ret = produceRetCode('fail', 'course does not exist')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		cserializer = CourseSerializer(course)
+		courses.append(cserializer.data)
+	ret = produceRetCode('success', '', courses)
+	return Response(ret, status=status.HTTP_200_OK)
+
+	

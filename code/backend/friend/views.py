@@ -2,13 +2,17 @@ from backend.friend.models import FriendRelation, FriendRequest
 from backend.friend.serializers import RelationSerializer, RequestSerializer
 from backend.personal.models import User, UserState
 from backend.personal.serializers import RegisterSerializer, UserSerializer
-from backend.univinfo.models import University, Major, Course
+from backend.univinfo.models import University, Major, Course, Section
+from backend.univinfo.serializers import SectionSerializer, CourseSerializer
+from backend.curriculum.models import CourseItem
+from backend.curriculum.serializers import CourseItemSerializer
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from backend.personal.views import produceRetCode, authenticated
 
 @api_view(['POST'])
+@authenticated
 def searchForUser(request):
 	try:
 		query = request.DATA['query']
@@ -16,12 +20,12 @@ def searchForUser(request):
 		ret = produceRetCode('fail', 'query required')
 		return Response(ret, status=status.HTTP_202_ACCEPTED)
 
-	userlist1 = User.objects.filter(email__iexact=query)
-	userlist2 = User.objects.filter(nick_name__iexact=query)
-	userlist3 = User.objects.filter(first_name__iexact=query)
-	userlist4 = User.objects.filter(last_name__iexact=query)
-	userlist5 = User.objects.filter(gender__iexact=query)
-	userlist6 = User.objects.filter(phone__iexact=query)
+	userlist1 = User.objects.filter(email__iexact=query).exclude(id=request.DATA['user'].id)
+	userlist2 = User.objects.filter(nick_name__iexact=query).exclude(id=request.DATA['user'].id)
+	userlist3 = User.objects.filter(first_name__iexact=query).exclude(id=request.DATA['user'].id)
+	userlist4 = User.objects.filter(last_name__iexact=query).exclude(id=request.DATA['user'].id)
+	userlist5 = User.objects.filter(gender__iexact=query).exclude(id=request.DATA['user'].id)
+	userlist6 = User.objects.filter(phone__iexact=query).exclude(id=request.DATA['user'].id)
 	userlist = userlist1 | userlist2 | userlist3 | userlist4 | userlist5 | userlist6
 	serializers = UserSerializer(userlist, many=True)
 	ret = produceRetCode('success', '', serializers.data)
@@ -217,4 +221,82 @@ def deleteFriend(request):
 		ret = produceRetCode('fail', 'not friend yet')
 		return Response(ret, status=status.HTTP_202_ACCEPTED)
 
+@api_view(['POST'])
+@authenticated
+def getSameCourses(request):
+	try:
+		friendid = request.DATA['friendid']
+	except KeyError:
+		ret = produceRetCode('fail', 'friend id required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	friendcourses = CourseItem.objects.filter(user=friendid)
+	fserializer = CourseItemSerializer(friendcourses, many=True)
+	mycourses = CourseItem.objects.filter(user=request.DATA['user'].id)
+	mserializer = CourseItemSerializer(mycourses, many=True)
+	sections = []
+	for friendcourse in fserializer.data:
+		for mycourse in mserializer.data:
+			if friendcourse["section"] == mycourse["section"]:
+				sections.append(friendcourse["section"])
+	courseinfo = []
+	for section in sections:
+		try:
+			tsec = Section.objects.get(id=section)
+		except Section.DoesNotExist:
+			ret = produceRetCode('fail', 'database inconsistance')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		sserializer = SectionSerializer(tsec)
+		try:
+			tcourse = Course.objects.get(id=sserializer.data["course"])
+		except Course.DoesNotExist:
+			ret = produceRetCode('fail', 'database inconsistance')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		cserializer = CourseSerializer(tcourse)
+		courseinfo.append(cserializer.data)
+	ret = produceRetCode('success', '', courseinfo)
+	return Response(ret, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def getUsersInfo(request):
+	try:
+		ids = request.DATA['ids']
+	except KeyError:
+		ret = produceRetCode('fail', 'user id required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	users = []
+	for pk in ids:
+		try:
+			user = User.objects.get(id=pk)
+		except User.DoesNotExist:
+			ret = produceRetCode('fail', 'database inconsistance')
+			return Response(ret, status=status.HTTP_202_ACCEPTED)
+		userializer = UserSerializer(user)
+		users.append(userializer.data)
+	ret = produceRetCode('success', '', users)
+	return Response(ret, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def getSameCourseUsers(request):
+	try:
+		courseid = request.DATA['courseid']
+	except KeyError:
+		ret = produceRetCode('fail', 'course id required')
+		return Response(ret, status=status.HTTP_202_ACCEPTED)
+	sections = Section.objects.filter(course=courseid)
+	sserializer = SectionSerializer(sections, many=True)
+	sdata = sserializer.data
+	users = []
+	for section in sdata:
+		courseitems = CourseItem.objects.filter(section=section["id"])
+		ciserializer = CourseItemSerializer(courseitems, many=True)
+		cidata = ciserializer.data
+		for ci in cidata:
+			if ci["user"] in users:
+				pass
+			else:
+				users.append(ci["user"])
+	ret = produceRetCode('success', '', users)
+	return Response(ret, status=status.HTTP_200_OK)
+
+
+	

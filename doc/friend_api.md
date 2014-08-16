@@ -15,15 +15,19 @@ url相对路径  | HTTP variable | 功能
 /getfriendlist/			|    POST   |   获取好友列表
 /isfriend/				|    POST   |   判断任意两个用户是否为好友
 /deletefriend/   		|    POST   |   删除好友
+/getsamecourses/		|	 POST	|   获取共同课程信息
+/getusersinfo/    		|	 POST	|	获取用户信息
+/getsamecourseusers/   |    POST   |   获取相同课程用户
 
 ####二，数据格式
 
-(1)搜索用户：/searchforuser/	
+(1)搜索用户：/searchforuser/	  
 
 请求数据格式：
 	
 	{
-	    query:  string,		查询关键字，required
+	    query:  string,		//查询关键字，required
+	    token:	string,		//required
 	}
 
 返回数据格式：
@@ -39,6 +43,7 @@ url相对路径  | HTTP variable | 功能
 			last_name:		string,
 			gender:		string,
 			phone:		string,
+			image:		string,
 			uniserity:	integer,	//university id, 可用来检索具体学校信息
 			major:		integer		//major id, 可用来检索具体专业信息
 			}
@@ -171,7 +176,78 @@ url相对路径  | HTTP variable | 功能
 		status:		string,
 		message: 	string
 	}
+	
+(9)获取共同课程信息：/getsamecourses/ 
 
+请求数据格式：
+
+	{
+		token:		string,		//登录时获得, required
+		friendid:	integer		//required
+	}
+	
+返回数据格式：
+
+	JSON:
+	{
+		status:		string,
+		message: 	string,
+		data:	{
+			id:			integer,
+			fullname:	string,
+			shortname:	string,
+			university:	integer,
+			department:	string
+		
+		}
+	}
+	
+(10)获取用户信息：/getusersinfo/ 
+
+请求数据格式：
+
+	{
+		ids:	integer list, 	//required
+	}
+	
+返回数据格式：
+
+	JSON:
+	{
+		status:		string,
+		message: 	string,
+		data:	{
+			id: 	integer,
+			email: 	string,
+			nick_name:	string,
+			first_name:		string,
+			last_name:		string,
+			gender:		string,
+			phone:		string,
+			image:		string,
+			uniserity:	integer,	//university id, 可用来检索具体学校信息
+			major:		integer		//major id, 可用来检索具体专业信息	
+		}
+	}
+
+（11）获取相同课程用户： /getsamecourseusers/
+
+请求数据格式：
+
+	{
+		courseid:	integer ,	 	//required
+	}
+	
+返回数据格式：
+
+	JSON:
+	{
+		status:		string,
+		message: 	string,
+		data:	{
+			a list of user ids
+		}
+	}
 ####三，返回数据说明
 #####1，status 字段
 status code| 功能

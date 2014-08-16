@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from backend.personal.views import produceRetCode, authenticated
 from backend.utils.fetch.fetch import fetch_curriculum
-from backend.univinfo.models import Professor, Section
-#from backend.univinfo.serializers import ProfessorSerializer, CourseSerializer, SectionSerializer, LectureSerializer
+from backend.univinfo.models import Professor, Section, Course
+from backend.univinfo.serializers import CourseSerializer
 from backend.curriculum.models import CourseItem, Review
 from backend.curriculum.serializers import CourseItemSerializer, ReviewSerializer
 import datetime
