@@ -65,7 +65,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'gradagenda',
-        'USER': 'root',
+        'USER': 'tester',
         'PASSWORD': 'yj1991',
         'HOST': '127.0.0.1',
         'PORT': 3306,

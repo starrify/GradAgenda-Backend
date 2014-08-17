@@ -196,6 +196,19 @@ def edit(request):
 
 
 """
+upload pictures:
+
+"""
+@api_view(['POST'])
+@authenticated
+def uploadPic(request):
+    user = request.DATA['user']
+    user.image = request.FILES['docfile']
+    user.save()
+    ret = produceRetCode('success', user.image.url)
+    return Response(ret, status=status.HTTP_202_ACCEPTED)
+
+"""
 edit password module:
 
 input: token, old_password, new_password
