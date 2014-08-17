@@ -13,7 +13,7 @@ class User(models.Model):
     tpa_type = models.CharField(max_length=10, default='Unknown')  #third part account type
     tpa_id = models.CharField(max_length=50, default='Unknown')    #third part account id
     tpa_token = models.CharField(max_length=255, default='Unknown')
-    image = models.ImageField(upload_to='backend/static/upload_pic/personal/', null=True)
+    image = models.ImageField(upload_to='upload_pic/personal/', null=True)
     university = models.ForeignKey(University)
     major = models.ForeignKey(Major)
 

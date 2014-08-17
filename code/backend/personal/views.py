@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils.datastructures import MultiValueDictKeyError
+from backend.settings import BASE_DIR, SITE_URL, APP_ID, APP_SECRET, URI
 
 def authenticated(method):
     def wrapper(request):
@@ -199,14 +200,22 @@ def edit(request):
 upload pictures:
 
 """
+import os
 @api_view(['POST'])
 @authenticated
 def uploadPic(request):
     user = request.DATA['user']
-    user.image = request.FILES['docfile']
-    user.save()
-    ret = produceRetCode('success', user.image.url)
-    return Response(ret, status=status.HTTP_202_ACCEPTED)
+    try:
+        if user.image:
+            if user.image != "Unknown":
+                os.remove(os.path.join(BASE_DIR, 'backend'+user.image.url))
+        user.image = request.FILES['image']
+        user.save()
+        ret = produceRetCode('success', SITE_URL+user.image.url)
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
+    except:
+        ret = produceRetCode('fail', 'image uploads failed')
+        return Response(ret, status=status.HTTP_202_ACCEPTED)
 
 """
 edit password module:
@@ -235,9 +244,7 @@ import urllib
 import urllib2
 from facebook import FacebookAPI, GraphAPI
 
-APP_ID = "1518316575054188"
-APP_SECRET = "2b19131660edda56deece972bc4c5aef"
-uri = "http://testinglife.duapp.com/login/"
+
 
 @api_view(['POST'])
 def login_facebook(request):
@@ -247,7 +254,7 @@ def login_facebook(request):
         ret = produceRetCode("fail", "code required")
         return Response(ret, status=status.HTTP_202_ACCEPTED)
     try:
-        f = FacebookAPI(APP_ID, APP_SECRET, uri)
+        f = FacebookAPI(APP_ID, APP_SECRET, URI)
         res = f.get_access_token(code) # get long term token
         graph = GraphAPI(res['access_token'])  # access GraphAPI of facebook
         personalInfo = graph.get('me')
@@ -299,7 +306,7 @@ def userInfo(request):
         "last_name" : user.last_name,
         "nick_name" : user.nick_name,
         "gender"    : user.gender,
-        "image"     : user.image,
+        # "image"     : user.image,
         "tpa_type"  : user.tpa_type,
         "tpa_id"    : user.tpa_id,
         "tpa_token" : user.tpa_token,
@@ -308,6 +315,9 @@ def userInfo(request):
         "email"     : user.email,
         "phone"     : user.phone
     }
+    if user.image:
+        if user.image != "Unknown":
+            userData['image'] = SITE_URL + user.image.url
     ret = produceRetCode('success', '', userData)
     return Response(ret, status=status.HTTP_200_OK)
 

@@ -3,7 +3,7 @@
 - Changelog: 
     - 2014.07.15 Initial version.
     - 2014.07.31 Edited by Ji Yang (yangji9181@gmail.com)
- 
+ 	- 2014.08.17 Edited by Yunpeng Chen (mathcyp2008@hotmail.com)
 ####一,URL说明
 url相对路径  | HTTP variable | 功能 
 ----------     | ----------| -------- 
@@ -14,6 +14,7 @@ url相对路径  | HTTP variable | 功能
 /edit/password/|    POST   |   修改密码
 /info/         |    POST   |   获取个人资料
 /fblogin/      |    POST   |   通过facebook登录
+/uploadimage/  |    POST   |   上传个人照片
 
 ####二，数据格式
 
@@ -170,7 +171,7 @@ url相对路径  | HTTP variable | 功能
 		    phone:      string
 		}
 	}
-(7)facebook登录： /fblogin/
+(7)facebook登录： /fblogin/  
 请求数据格式：
 
 	{
@@ -190,8 +191,25 @@ url相对路径  | HTTP variable | 功能
 			token:   string  // 本系统用户令牌，登出后失效
 		}
 	}
+说明：  
+1, settings文件中facebook应用相关的几个参数需根据最终程序部署信息修改
 
+(8) 上传图片: /uploadimage/  
+请求参数：  
 
+	token: string,  
+	image: File // 待上传的图片图片文件
+	
+返回参数: 
+
+	JSON:
+	{
+		status: string,
+		message  : string // 上传成功返回该图片url
+	}
+说明：  
+1, settings.SITE_URL为程序部署后的后端站点根目录地址，目前默认为localhost，需在部署程序后修改。  
+2，新照片上传之后旧的照片会被删除。
 ####三，返回数据说明
 #####1，status 字段
 status code| 功能
