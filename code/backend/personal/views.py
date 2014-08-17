@@ -110,7 +110,7 @@ def login(request):
     if request.DATA['password'] == user.password:
         ip = getIP(request)
         token = produceLoginToken(user.id)
-        return setUserState(user.id, ip, token)
+        return setUserState(user, ip, token)
     else:
         ret = produceRetCode('fail','invalid email or password')
         return Response(ret, status=status.HTTP_202_ACCEPTED)
@@ -298,7 +298,6 @@ def userInfo(request):
         "first_name": user.first_name,
         "last_name" : user.last_name,
         "nick_name" : user.nick_name,
-        "password"  : user.password,
         "gender"    : user.gender,
         "image"     : user.image,
         "tpa_type"  : user.tpa_type,
@@ -321,7 +320,8 @@ def getIP(request):
         ip = request.META['REMOTE_ADDR']
     return ip
 
-def setUserState(user_id, ip, token):
+def setUserState(user, ip, token):
+    user_id = user.id
     stateData = {}
     stateData['user']  = user_id
     stateData['token'] = token
@@ -329,6 +329,18 @@ def setUserState(user_id, ip, token):
     serializer = UserStateSerializer(data=stateData)
     if serializer.is_valid():
         serializer.save()
+        stateData["first_name"]= user.first_name
+        stateData["last_name"] = user.last_name
+        stateData["nick_name"] = user.nick_name
+        stateData["gender"]    = user.gender
+        stateData["image"]     = user.image
+        stateData["tpa_type"]  = user.tpa_type
+        stateData["tpa_id"]    = user.tpa_id
+        stateData["tpa_token"] = user.tpa_token
+        stateData["university"]= user.university.id
+        stateData["major"]     = user.major.id
+        stateData["email"]     = user.email
+        stateData["phone"]     = user.phone
         ret = produceRetCode('success','',stateData)
         return Response(ret, status=status.HTTP_200_OK)
     else:

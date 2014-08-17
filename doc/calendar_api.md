@@ -8,10 +8,10 @@
 url相对路径  | HTTP variable | 功能 
 ----------     | ----------| -------- 
 /addevent/     |    POST   |   新增事件
-/getevent/     |    POST   |   获取自己的事件
-/alterevent/   |    GET    |   获取单个事件
-/alterevent/   |    PUT    |   修改事件
-/alterevent/   |   DELETE  |   删除事件
+/geteventlist/ |    POST   |   获取自己的事件
+/getevent/     |    POST   |   获取单个事件
+/alterevent/   |    POST   |   修改事件
+/deleteevent/  |    POST   |   删除事件
 
 ####二，数据格式
 
@@ -35,7 +35,7 @@ url相对路径  | HTTP variable | 功能
 		message  : string,
 	}
 	
-(2)获取自己的事件：/getevent/
+(2)获取自己的事件：/geteventlist/
 
 请求数据格式：
 
@@ -60,7 +60,7 @@ url相对路径  | HTTP variable | 功能
 					status:		integer
 					}
 	}
-(3)获取单个事件：/alterEvent/ -X GET
+(3)获取单个事件：/getevent/ 
 
 请求数据格式：
 
@@ -85,16 +85,16 @@ url相对路径  | HTTP variable | 功能
 					}
 	}
 
-(4)修改事件：/alterEvent/ -X PUT
+(4)修改事件：/alterevent/ 
 
 请求数据格式：
 
 	{
 		token:	string		//登录时获得, required
-		id:		integer		//通过getevent获得, required		name:   string,		//required
+		id:		integer		//通过getevent获得, required		name:   string,		//optional, 默认Unknown
 		startdatetime:   string	,	//required
-		location:	string,		//required
-		status:		integer		//required
+		location:	string,		//optional, 默认Unknown
+		status:		integer		//optional, 默认Unknown
 	}
 	
 返回数据格式：
@@ -105,7 +105,7 @@ url相对路径  | HTTP variable | 功能
 		message  : string,
 	}
 
-(5)删除事件：/alterEvent/ -X DELETE
+(5)删除事件：/deletevent/
 
 请求数据格式：
 
