@@ -19,7 +19,15 @@ def inputUniversities():
 
 def inputMajors():
 	Major.objects.create(id = 1, shortname = 'Unknown', fullname = 'Unknown')
-	Major.objects.create(id = 2, shortname = 'CS', fullname = 'Computer Science')
+	f=open('backend/univinfo/major.conf')
+	pk = 1
+	content=f.read()
+	lines=content.splitlines()
+	for line in lines:
+		a=line.split(',')
+		pk=pk+1
+		Major.objects.create(id = pk, shortname = a[1], fullname = a[0])
+	f.close()
 
 def inputSemesters():
 	Semester.objects.create(id = 1, name = 'summer-2014', university = University.objects.get(shortname='UCB'), start = date(2014,6,1), end = date(2014,8,31))
