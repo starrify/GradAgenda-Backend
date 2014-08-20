@@ -8,5 +8,12 @@
     <title>欢迎页</title>
     <body>
         <p>欢迎光临本网站</p>
+        <form action="{% url upload_pic %}" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <p>
+                      <input id="id_image" type="file" class="" name="image"> <!-- 这一行应该是form.image，省事写的 -->
+                </p>
+                <input type="submit" value="Submit" />
+          </form>
+
     </body>
 </html>

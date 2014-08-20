@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     url(r'^edit/password/$', 'backend.personal.views.editPw'),
     url(r'^fblogin/$', 'backend.personal.views.login_facebook'),
     url(r'^info/$', 'backend.personal.views.userInfo'),
+    url(r'^uploadimage/$', 'backend.personal.views.uploadPic'),
 
     url(r'^addevent/$', 'backend.calendarr.views.addEvent'),
     url(r'^geteventlist/$', 'backend.calendarr.views.getEventList'),
