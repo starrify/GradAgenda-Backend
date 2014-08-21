@@ -22,9 +22,6 @@ strings = {
     'semester_curriculum': {
         'summer-2014': 'summer-2014',
         },
-    'semester_univinfo': {
-        'summer-2014': 'SU',
-        }
     }
 
 
