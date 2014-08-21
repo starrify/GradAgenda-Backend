@@ -14,12 +14,14 @@ __email__ = 'pengyu@libstarrify.so'
 __status__ = 'development'
 
 
-_univ_collection = {}
 import _UCBerkeley
 import _Purdue
+import _UIUC
+
+_univ_collection = {}
 _univ_collection['UCB'] = _UCBerkeley
 _univ_collection['PU'] = _Purdue
-
+_univ_collection['UIUC'] = _UIUC
 
 def fetch_curriculum(
         university, username, password, semester,
@@ -72,10 +74,14 @@ def fetch_curriculum(
 
 def main():
     ret = fetch_curriculum(
- #       'Purdue', 'yuan48', 'App123456', 'spring-2014')
-        'UCBerkeley', 'a0114792', 'mmk*718AA', 'summer-2014')
-    import json
-    print(json.dumps(ret, indent=4))
+        # 'Purdue', 'yuan48', 'App123456', 'spring-2014')
+        # 'UCBerkeley', 'a0114792', 'mmk*718AA', 'summer-2014')
+        'UIUC', 'jiyang3', 'THIS_IS_NOT_HIS_PASSWORD', 'fall-2014')
+    if True:
+        print(ret)
+    else:
+        import json
+        print(json.dumps(ret, indent=4))
     pass
 
 def testcase():
@@ -84,6 +90,14 @@ def testcase():
         'UCB', 'a0114792', 'mmk*718AA', 'summer-2014')
     import json
     return ret
+
+
+#def testcase():
+#    ret = fetch_curriculum(
+#        'UIUC', 'jiyang3', 'Lion_2013', 'autumn-2014')
+#        # 'Purdue', 'yuan48', 'App123456', 'spring-2014')
+#        # 'UCB', 'a0114792', 'mmk*718AA', 'summer-2014')
+#    return ret
 
 
 if __name__ == '__main__':
